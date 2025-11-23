@@ -6,7 +6,7 @@ type ReviewsListProps = {
 };
 
 export default function ReviewsList({ reviews }: ReviewsListProps): JSX.Element {
-  const sortedReviews = reviews?.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 10);
+  const sortedReviews = reviews ? [...reviews].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10) : undefined;
 
   return (
     <div>

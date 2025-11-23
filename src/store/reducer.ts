@@ -1,6 +1,6 @@
 import { createReducer } from '@reduxjs/toolkit';
-import { cityChanged, offersLoaded, reviewsLoaded } from './actions.js';
-import { City, Offer, Review } from '../types/index';
+import { cityChanged, offersLoaded, reviewsLoaded, sortTypeChecked } from './actions.js';
+import { City, Offer, Review, SortType } from '../types/index';
 import { offers } from '@mocks/offers';
 import { reviews } from '@mocks/reviews';
 import { Cities } from '@consts';
@@ -9,12 +9,14 @@ interface State {
   city: City;
   offers: Offer[];
   reviews: Review[];
+  sortType: SortType;
 }
 
 const initState: State = {
   city: Cities.find((c) => c.city.name === 'Paris')?.city ?? Cities[0].city,
   offers: [],
   reviews: [],
+  sortType: SortType.Popular
 };
 
 export const reducer = createReducer(initState, (builder) => {
@@ -27,5 +29,8 @@ export const reducer = createReducer(initState, (builder) => {
     })
     .addCase(reviewsLoaded, (state) => {
       state.reviews = reviews;
+    })
+    .addCase(sortTypeChecked, (state, { payload }) => {
+      state.sortType = payload;
     });
 });
