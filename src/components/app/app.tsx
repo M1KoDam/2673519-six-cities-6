@@ -7,26 +7,26 @@ import LoginPage from '@pages/login-page/login-page.tsx';
 import MainPage from '@pages/main-page/main-page.tsx';
 import OfferPage from '@pages//offer-page/offer-page.tsx';
 import NotFoundPage from '@pages/not-found-page/not-found-page';
-import { Offer, Review } from '@types';
+import { useStoreState, useStoreDispatch, offersLoaded, reviewsLoaded } from '@store/index';
 
-type AppProps = {
-    placesCount: number;
-    offers: Offer[];
-    reviews: Review[];
-}
+export default function App(): JSX.Element {
+  const offers = useStoreState((state) => state.offers);
+  const reviews = useStoreState((state) => state.reviews);
+  const dispatch = useStoreDispatch();
+  dispatch(offersLoaded(offers));
+  dispatch(reviewsLoaded(reviews));
 
-export default function App({placesCount, offers, reviews}: AppProps): JSX.Element {
   return (
     <HelmetProvider>
       <BrowserRouter>
         <Routes>
           <Route
             path={AppRoute.Root}
-            element={<MainPage placesCount={placesCount} offers={offers}/>}
+            element={<MainPage/>}
           />
           <Route
             path={AppRoute.Login}
-            element={<LoginPage />}
+            element={<LoginPage/>}
           />
           <Route
             path={AppRoute.Favorites}
@@ -34,18 +34,13 @@ export default function App({placesCount, offers, reviews}: AppProps): JSX.Eleme
               <PrivateRoute
                 authorizationStatus={AuthStatus.Auth}
               >
-                <FavoritesPage offers={offers}/>
+                <FavoritesPage/>
               </PrivateRoute>
             }
           />
           <Route
             path={`${AppRoute.Offer}/:id`}
-            element={
-              <OfferPage
-                offers={offers}
-                reviews={reviews}
-              />
-            }
+            element={<OfferPage/>}
           />
           <Route
             path='*'
