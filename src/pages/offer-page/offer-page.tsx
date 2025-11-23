@@ -1,7 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import ReviewForm from '@components/review-form/review-form';
 import { AppRoute } from '@consts';
-import { Review, Offer } from '@types';
 import {useParams} from 'react-router-dom';
 import NotFoundPage from '@pages/not-found-page/not-found-page';
 import ReviewsList from '@components/review-list/review-list';
@@ -9,18 +8,17 @@ import Map from '@components/map/map';
 import NearbyOffersList from '@components/nearby-offers-list/nearby-offers-list';
 import { MapClassName } from '@consts';
 import HeaderNav from '@components/header-nav/header-nav';
+import { useStoreState } from '@store/hooks';
 
-type OfferScreenProps = {
-  offers: Offer[];
-  reviews: Review[];
-};
-
-export default function OfferPage({ offers, reviews }: OfferScreenProps): JSX.Element {
+export default function OfferPage(): JSX.Element {
   const params = useParams();
+  const offers = useStoreState((state) => state.offers);
+  const reviews = useStoreState((state) => state.reviews);
+
   const curOffer = offers.find((item) => item.id === params.id);
 
   if (!curOffer) {
-    return <NotFoundPage />;
+    return <NotFoundPage/>;
   }
 
   const nearbyOffers = offers.filter(
