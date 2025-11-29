@@ -57,6 +57,16 @@ export default function Map(props: MapProps): JSX.Element {
     }
   }, [map, offers, selectedOffer]);
 
+  useEffect(() => {
+    if (map && selectedOffer?.city.location) {
+      map.setView(
+        [selectedOffer.city.location.latitude, selectedOffer.city.location.longitude],
+        map.getZoom(),
+        { animate: true }
+      );
+    }
+  }, [map, selectedOffer]);
+
   return (
     <section
       className={className}

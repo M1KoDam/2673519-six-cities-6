@@ -126,7 +126,6 @@ export default function OfferPage(): JSX.Element {
               </section>
             </div>
           </div>
-          <section className="offer__map map"></section>
           <Map
             city={curOffer.city}
             offers={[curOffer, ...nearbyOffers]}

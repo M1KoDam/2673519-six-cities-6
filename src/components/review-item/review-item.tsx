@@ -27,7 +27,7 @@ export default function ReviewItem({ review }: ReviewItemProps): JSX.Element {
           </div>
         </div>
         <p className="reviews__text">{review.comment}</p>
-        <time className="reviews__time" dateTime={review.date.toDateString()}>{formattedDate}</time>
+        <time className="reviews__time" dateTime={new Date(review.date).toISOString()}>{formattedDate}</time>
       </div>
     </li>
   );
