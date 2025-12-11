@@ -3,5 +3,16 @@ import { reducer } from './reducer';
 export * from './types';
 export * from './hooks';
 export * from './actions';
+import { createAPI } from '../services/api';
 
-export const store = configureStore({ reducer });
+export const api = createAPI();
+
+export const store = configureStore({
+  reducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      thunk: {
+        extraArgument: api,
+      },
+    }),
+});
