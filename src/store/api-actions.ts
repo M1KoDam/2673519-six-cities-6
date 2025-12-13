@@ -1,8 +1,8 @@
-import { AxiosInstance } from 'axios';
+import { AxiosInstance, AxiosError } from 'axios';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { StoreDispatch, StoreState } from './types';
-import { Offer } from '@types';
-import { offersLoaded, authRequired, setDataLoadingStatus } from './actions';
+import { Offer, Review } from '@types';
+import { offersLoaded, offerUpdated, reviewsLoaded, authRequired, setDataLoadingStatus, setEmail } from './actions';
 import { saveStorageToken, dropStorageToken } from '@services/token';
 import { APIRoute, AuthStatus } from '@types';
 import { User } from '@types';
@@ -15,6 +15,11 @@ type AuthData = {
 type LoginResponse = {
   token: string;
   user: User;
+};
+
+type ErrorResponse = {
+  message?: string;
+  error?: string;
 };
 
 export const fetchOffers = createAsyncThunk<
@@ -60,6 +65,9 @@ export const checkAuth = createAsyncThunk<
     try {
       const { data } = await api.get<User>(APIRoute.Login);
       dispatch(authRequired(AuthStatus.Auth));
+      if (data.email) {
+        dispatch(setEmail(data.email));
+      }
       return data;
     } catch (error) {
       dispatch(authRequired(AuthStatus.NoAuth));
@@ -88,11 +96,25 @@ export const login = createAsyncThunk<
 
       saveStorageToken(data.token);
       dispatch(authRequired(AuthStatus.Auth));
-      return data.user || { email, token: data.token } as User;
+      dispatch(setEmail(data.user.email ?? email));
+
+      return data.user;
     } catch (error) {
-      const errorMessage = error instanceof Error
-        ? error.message
-        : 'Login failed';
+      let errorMessage = 'Login failed';
+
+      if (error instanceof AxiosError) {
+        const axiosError = error as AxiosError<ErrorResponse>;
+        const responseData = axiosError.response?.data;
+
+        if (responseData?.message) {
+          errorMessage = responseData.message;
+        } else if (responseData?.error) {
+          errorMessage = responseData.error;
+        } else if (axiosError.response?.status === 400) {
+          errorMessage = 'Invalid email or password';
+        }
+      }
+
       return rejectWithValue(errorMessage);
     }
   }
@@ -121,6 +143,59 @@ export const logout = createAsyncThunk<
       const errorMessage = error instanceof Error
         ? error.message
         : 'Logout failed';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const fetchOffer = createAsyncThunk<
+  Offer,
+  string,
+  {
+    dispatch: StoreDispatch;
+    state: StoreState;
+    extra: AxiosInstance;
+    rejectValue: string;
+  }
+>(
+  'data/fetchOffer',
+  async (offerId, { dispatch, extra: api, rejectWithValue }) => {
+    try {
+      dispatch(setDataLoadingStatus(true));
+      const { data } = await api.get<Offer>(`${APIRoute.Offers}/${offerId}`);
+      dispatch(offerUpdated(data));
+      return data;
+    } catch (error) {
+      const errorMessage = error instanceof Error
+        ? error.message
+        : 'Failed to fetch offer';
+      return rejectWithValue(errorMessage);
+    } finally {
+      dispatch(setDataLoadingStatus(false));
+    }
+  }
+);
+
+export const fetchReviews = createAsyncThunk<
+  Review[],
+  string,
+  {
+    dispatch: StoreDispatch;
+    state: StoreState;
+    extra: AxiosInstance;
+    rejectValue: string;
+  }
+>(
+  'data/fetchReviews',
+  async (offerId, { dispatch, extra: api, rejectWithValue }) => {
+    try {
+      const { data } = await api.get<Review[]>(`${APIRoute.Comments}/${offerId}`);
+      dispatch(reviewsLoaded(data));
+      return data;
+    } catch (error) {
+      const errorMessage = error instanceof Error
+        ? error.message
+        : 'Failed to fetch reviews';
       return rejectWithValue(errorMessage);
     }
   }

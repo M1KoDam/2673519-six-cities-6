@@ -8,14 +8,35 @@ import Map from '@components/map/map';
 import NearbyOffersList from '@components/nearby-offers-list/nearby-offers-list';
 import { MapClassName } from '@consts';
 import HeaderNav from '@components/header-nav/header-nav';
-import { useStoreState } from '@store/hooks';
+import { useStoreState, useStoreDispatch } from '@store/hooks';
+import { addTokenToImageUrl } from '../../utils/image-url';
+import { fetchOffer, fetchReviews } from '@store/api-actions';
+import { useEffect, useState } from 'react';
+import LoadingPage from '@pages/loading-page/loading-page';
+import { Offer } from '@types';
 
 export default function OfferPage(): JSX.Element {
   const params = useParams();
+  const dispatch = useStoreDispatch();
   const offers = useStoreState((state) => state.offers);
   const reviews = useStoreState((state) => state.reviews);
+  const isDataLoading = useStoreState((state) => state.isDataLoading);
+  const [hoveredOffer, setHoveredOffer] = useState<Offer | null>(null);
 
   const curOffer = offers.find((item) => item.id === params.id);
+
+  useEffect(() => {
+    if (params.id) {
+      if (!curOffer || !curOffer.description || !curOffer.images || curOffer.images.length === 0) {
+        dispatch(fetchOffer(params.id));
+      }
+      dispatch(fetchReviews(params.id));
+    }
+  }, [params.id, dispatch, curOffer]);
+
+  if (isDataLoading && !curOffer) {
+    return <LoadingPage/>;
+  }
 
   if (!curOffer) {
     return <NotFoundPage/>;
@@ -48,11 +69,11 @@ export default function OfferPage(): JSX.Element {
           <div className="offer__gallery-container container">
             <div className="offer__gallery">
               {
-                curOffer.images.map((image) => (
+                (curOffer.images || []).map((image) => (
                   <div key={image} className="offer__image-wrapper">
                     <img
                       className="offer__image"
-                      src={image}
+                      src={addTokenToImageUrl(image)}
                       alt="Photo studio"
                     />
                   </div>
@@ -88,9 +109,9 @@ export default function OfferPage(): JSX.Element {
                 <span className="offer__rating-value rating__value">{curOffer.rating}</span>
               </div>
               <ul className="offer__features">
-                <li className="offer__feature offer__feature--entire">{curOffer.type}</li>
-                <li className="offer__feature offer__feature--bedrooms">{curOffer.bedrooms} Bedrooms</li>
-                <li className="offer__feature offer__feature--adults">Max {curOffer.maxAdults} adults</li>
+                <li className="offer__feature offer__feature--entire">{curOffer.type || ''}</li>
+                <li className="offer__feature offer__feature--bedrooms">{curOffer.bedrooms || 0} Bedrooms</li>
+                <li className="offer__feature offer__feature--adults">Max {curOffer.maxAdults || 0} adults</li>
               </ul>
               <div className="offer__price">
                 <b className="offer__price-value">&euro;{curOffer.price}</b>
@@ -99,7 +120,7 @@ export default function OfferPage(): JSX.Element {
               <div className="offer__inside">
                 <h2 className="offer__inside-title">What&apos;s inside</h2>
                 <ul className="offer__inside-list">
-                  {curOffer.goods.map((good) => (
+                  {(curOffer.goods || []).map((good) => (
                     <li key={good} className="offer__inside-item">
                       {good}
                     </li>
@@ -108,33 +129,50 @@ export default function OfferPage(): JSX.Element {
               </div>
               <div className="offer__host">
                 <h2 className="offer__host-title">Meet the host</h2>
-                <div className="offer__host-user user">
-                  <div className={`offer__avatar-wrapper ${curOffer.author.isPro && 'offer__avatar-wrapper--pro'} user__avatar-wrapper`}>
-                    <img className="offer__avatar user__avatar" src={curOffer.author.avatarUrl} width="74" height="74" alt="Host avatar" />
+                {curOffer.host && (
+                  <div className="offer__host-user user">
+                    <div className={`offer__avatar-wrapper ${curOffer.host.isPro && 'offer__avatar-wrapper--pro'} user__avatar-wrapper`}>
+                      <img className="offer__avatar user__avatar" src={addTokenToImageUrl(curOffer.host.avatarUrl || '')} width="74" height="74" alt="Host avatar" />
+                    </div>
+                    <span className="offer__user-name">{curOffer.host.name || ''}</span>
+                    {curOffer.host.isPro && <span className="offer__user-status">Pro</span>}
                   </div>
-                  <span className="offer__user-name">{curOffer.author.name}</span>
-                  {curOffer.author.isPro && <span className="offer__user-status">Pro</span>}
-                </div>
+                )}
                 <div className="offer__description">
-                  <p className="offer__text">{curOffer.description}</p>
+                  <p className="offer__text">{curOffer.description || ''}</p>
                 </div>
               </div>
               <section className="offer__reviews reviews">
-                <h2 className="reviews__title">Reviews &middot; <span className="reviews__amount">{reviews ? reviews.length : 0}</span></h2>
-                <ReviewsList reviews={reviews}/>
-                <ReviewForm/>
+                {(() => {
+                  const offerReviews = reviews?.filter((review) =>
+                    !review.offerId || review.offerId === curOffer.id
+                  ) || [];
+                  return (
+                    <>
+                      <h2 className="reviews__title">Reviews &middot; <span className="reviews__amount">{offerReviews.length}</span></h2>
+                      <ReviewsList reviews={offerReviews}/>
+                      <ReviewForm/>
+                    </>
+                  );
+                })()}
               </section>
             </div>
           </div>
-          <Map
-            city={curOffer.city}
-            offers={[curOffer, ...nearbyOffers]}
-            selectedOffer={curOffer}
-            className={MapClassName.Offer}
-          />
+          {curOffer.city && (
+            <Map
+              city={curOffer.city}
+              offers={[curOffer, ...nearbyOffers]}
+              selectedOffer={hoveredOffer || curOffer}
+              className={MapClassName.Offer}
+            />
+          )}
         </section>
         <div className="container">
-          <NearbyOffersList offers={nearbyOffers}/>
+          <NearbyOffersList
+            offers={nearbyOffers}
+            onOfferHover={setHoveredOffer}
+            onOfferLeave={() => setHoveredOffer(null)}
+          />
         </div>
       </main>
     </div>

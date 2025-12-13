@@ -3,7 +3,7 @@ import { reducer } from './reducer';
 export * from './types';
 export * from './hooks';
 export * from './actions';
-import { createAPI } from '../services/api';
+import { createAPI, setDispatch } from '../services/api';
 
 export const api = createAPI();
 
@@ -16,3 +16,5 @@ export const store = configureStore({
       },
     }),
 });
+
+setDispatch(store.dispatch);

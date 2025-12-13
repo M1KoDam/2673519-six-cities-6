@@ -1,6 +1,7 @@
 import { Offer } from '@types';
 import { Link } from 'react-router-dom';
 import { AppRoute, CardImageWrapperClass, CardType } from '@consts';
+import { addTokenToImageUrl } from '../../utils/image-url';
 
 type PlaceCardProps = {
   offer: Offer;
@@ -23,7 +24,7 @@ export default function PlaceCard({offer, onCursorEnter, onCursorLeave, cardType
         <Link to={`${AppRoute.Offer}/${offer.id}`}>
           <img
             className="place-card__image"
-            src={offer.preview}
+            src={addTokenToImageUrl(offer.previewImage || offer.preview || (offer.images && offer.images[0]) || '')}
             width={cardType === CardType.Favorites ? 150 : 260}
             height={cardType === CardType.Favorites ? 110 : 200}
             alt="Place image"

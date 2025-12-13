@@ -1,5 +1,5 @@
 import { createReducer } from '@reduxjs/toolkit';
-import { cityChanged, offersLoaded, reviewsLoaded, sortTypeChecked, authRequired, setError, setDataLoadingStatus } from './actions.js';
+import { cityChanged, offersLoaded, offerUpdated, reviewsLoaded, sortTypeChecked, authRequired, setError, setDataLoadingStatus, setEmail } from './actions.js';
 import { City, Offer, Review, SortType, AuthStatus } from '../types/index';
 import { Cities } from '@consts';
 
@@ -11,6 +11,7 @@ interface State {
   authStatus: AuthStatus;
   error: string | null;
   isDataLoading: boolean;
+  email: string;
 }
 
 const initState: State = {
@@ -20,7 +21,8 @@ const initState: State = {
   sortType: SortType.Popular,
   authStatus: AuthStatus.NoAuth,
   error: null,
-  isDataLoading: false
+  isDataLoading: false,
+  email: ''
 };
 
 export const reducer = createReducer(initState, (builder) => {
@@ -30,6 +32,14 @@ export const reducer = createReducer(initState, (builder) => {
     })
     .addCase(offersLoaded, (state, action) => {
       state.offers = action.payload;
+    })
+    .addCase(offerUpdated, (state, action) => {
+      const index = state.offers.findIndex((offer) => offer.id === action.payload.id);
+      if (index !== -1) {
+        state.offers[index] = action.payload;
+      } else {
+        state.offers.push(action.payload);
+      }
     })
     .addCase(reviewsLoaded, (state, action) => {
       state.reviews = action.payload;
@@ -45,5 +55,8 @@ export const reducer = createReducer(initState, (builder) => {
     })
     .addCase(setDataLoadingStatus, (state, action) => {
       state.isDataLoading = action.payload;
+    })
+    .addCase(setEmail, (state, { payload }) => {
+      state.email = payload;
     });
 });

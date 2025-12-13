@@ -36,7 +36,7 @@ export default function App(): JSX.Element {
           <Route
             path={AppRoute.Favorites}
             element={
-              <PrivateRoute authorizationStatus={authStatus}>
+              <PrivateRoute>
                 <FavoritesPage/>
               </PrivateRoute>
             }

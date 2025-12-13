@@ -35,10 +35,11 @@ export default function Map(props: MapProps): JSX.Element {
     if (map) {
       const markerLayer = layerGroup().addTo(map);
       offers.forEach((offer) => {
-        if (offer && offer.city.location) {
+        const location = offer?.location || offer?.city?.location;
+        if (offer && location) {
           const marker = new Marker({
-            lat: offer.city.location.latitude,
-            lng: offer.city.location.longitude
+            lat: location.latitude,
+            lng: location.longitude
           });
 
           marker
@@ -58,12 +59,17 @@ export default function Map(props: MapProps): JSX.Element {
   }, [map, offers, selectedOffer]);
 
   useEffect(() => {
-    if (map && selectedOffer?.city.location) {
-      map.setView(
-        [selectedOffer.city.location.latitude, selectedOffer.city.location.longitude],
-        map.getZoom(),
-        { animate: true }
-      );
+    if (map && selectedOffer) {
+      const location = selectedOffer.location || selectedOffer.city?.location;
+      if (location) {
+        map.panTo(
+          [location.latitude, location.longitude],
+          {
+            animate: true,
+            duration: 0.5
+          }
+        );
+      }
     }
   }, [map, selectedOffer]);
 
