@@ -4,9 +4,11 @@ import { CardType } from '@consts';
 
 type NearbyOffersListProps = {
   offers: Offer[] | undefined;
+  onOfferHover?: (offer: Offer) => void;
+  onOfferLeave?: () => void;
 };
 
-export default function NearbyOffersList({ offers }: NearbyOffersListProps): JSX.Element {
+export default function NearbyOffersList({ offers, onOfferHover, onOfferLeave }: NearbyOffersListProps): JSX.Element {
   return (
     <section className="near-places places">
       <h2 className="near-places__title">Other places in the neighbourhood</h2>
@@ -16,8 +18,8 @@ export default function NearbyOffersList({ offers }: NearbyOffersListProps): JSX
             <PlaceCard
               key={offer.id}
               offer={offer}
-              onCursorEnter={() => {}}
-              onCursorLeave={() => {}}
+              onCursorEnter={() => onOfferHover?.(offer)}
+              onCursorLeave={() => onOfferLeave?.()}
               cardType={CardType.Nearest}
             />
           ))
