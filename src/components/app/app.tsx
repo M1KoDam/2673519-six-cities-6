@@ -1,20 +1,25 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import { AppRoute, AuthStatus } from '@consts';
+import { AppRoute } from '@consts';
 import PrivateRoute from '@components/private-route/private-route';
 import FavoritesPage from '@pages/favorites-page/favorites-page.tsx';
 import LoginPage from '@pages/login-page/login-page.tsx';
 import MainPage from '@pages/main-page/main-page.tsx';
 import OfferPage from '@pages//offer-page/offer-page.tsx';
 import NotFoundPage from '@pages/not-found-page/not-found-page';
-import { useStoreState, useStoreDispatch, offersLoaded, reviewsLoaded } from '@store/index';
+import { useStoreState } from '@store/index';
+import LoadingPage from '@pages/loading-page/loading-page';
+import { AuthStatus } from '@types';
 
 export default function App(): JSX.Element {
-  const offers = useStoreState((state) => state.offers);
-  const reviews = useStoreState((state) => state.reviews);
-  const dispatch = useStoreDispatch();
-  dispatch(offersLoaded(offers));
-  dispatch(reviewsLoaded(reviews));
+  const authStatus = useStoreState((state) => state.authStatus);
+  const isDataLoading = useStoreState((state) => state.isDataLoading);
+
+  if (authStatus === AuthStatus.Unknown || isDataLoading) {
+    return (
+      <LoadingPage/>
+    );
+  }
 
   return (
     <HelmetProvider>
@@ -31,9 +36,7 @@ export default function App(): JSX.Element {
           <Route
             path={AppRoute.Favorites}
             element={
-              <PrivateRoute
-                authorizationStatus={AuthStatus.Auth}
-              >
+              <PrivateRoute authorizationStatus={authStatus}>
                 <FavoritesPage/>
               </PrivateRoute>
             }

@@ -4,3 +4,5 @@ export * from './offer.interface';
 export * from './review.interface';
 export * from './user.interface';
 export * from './sort-type.enum';
+export * from './auth-status.enum';
+export * from './api-route.enum';
