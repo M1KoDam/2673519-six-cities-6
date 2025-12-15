@@ -1,28 +1,30 @@
 import { createReducer } from '@reduxjs/toolkit';
-import { cityChanged, offersLoaded, offerUpdated, reviewsLoaded, sortTypeChecked, authRequired, setError, setDataLoadingStatus, setEmail } from './actions.js';
-import { City, Offer, Review, SortType, AuthStatus } from '../types/index';
+import { cityChanged, offersLoaded, offerUpdated, reviewsLoaded, sortTypeChecked, authRequired, setError, setDataLoadingStatus, setUser, nearbyOffersLoaded } from './actions.js';
+import { City, Offer, Review, SortType, AuthStatus, User } from '../types/index';
 import { Cities } from '@consts';
 
 interface State {
   city: City;
   offers: Offer[];
   reviews: Review[];
+  nearbyOffers: Offer[];
   sortType: SortType;
   authStatus: AuthStatus;
   error: string | null;
   isDataLoading: boolean;
-  email: string;
+  user: User | null;
 }
 
 const initState: State = {
   city: Cities.find((c) => c.city.name === 'Paris')?.city ?? Cities[0].city,
   offers: [],
   reviews: [],
+  nearbyOffers: [],
   sortType: SortType.Popular,
-  authStatus: AuthStatus.NoAuth,
+  authStatus: AuthStatus.Unknown,
   error: null,
   isDataLoading: false,
-  email: ''
+  user: null
 };
 
 export const reducer = createReducer(initState, (builder) => {
@@ -44,6 +46,9 @@ export const reducer = createReducer(initState, (builder) => {
     .addCase(reviewsLoaded, (state, action) => {
       state.reviews = action.payload;
     })
+    .addCase(nearbyOffersLoaded, (state, action) => {
+      state.nearbyOffers = action.payload;
+    })
     .addCase(sortTypeChecked, (state, { payload }) => {
       state.sortType = payload;
     })
@@ -56,7 +61,7 @@ export const reducer = createReducer(initState, (builder) => {
     .addCase(setDataLoadingStatus, (state, action) => {
       state.isDataLoading = action.payload;
     })
-    .addCase(setEmail, (state, { payload }) => {
-      state.email = payload;
+    .addCase(setUser, (state, action) => {
+      state.user = action.payload;
     });
 });

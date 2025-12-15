@@ -10,41 +10,99 @@ import { MapClassName } from '@consts';
 import HeaderNav from '@components/header-nav/header-nav';
 import { useStoreState, useStoreDispatch } from '@store/hooks';
 import { addTokenToImageUrl } from '../../utils/image-url';
-import { fetchOffer, fetchReviews } from '@store/api-actions';
-import { useEffect, useState } from 'react';
+import { fetchOffer, fetchReviews, fetchNearbyOffers } from '@store/api-actions';
+import { useEffect, useState, useMemo } from 'react';
 import LoadingPage from '@pages/loading-page/loading-page';
-import { Offer } from '@types';
+import { AuthStatus, Offer } from '@types';
 
 export default function OfferPage(): JSX.Element {
   const params = useParams();
   const dispatch = useStoreDispatch();
   const offers = useStoreState((state) => state.offers);
   const reviews = useStoreState((state) => state.reviews);
-  const isDataLoading = useStoreState((state) => state.isDataLoading);
+  const authStatus = useStoreState((state) => state.authStatus);
   const [hoveredOffer, setHoveredOffer] = useState<Offer | null>(null);
+  const [isOfferLoading, setIsOfferLoading] = useState<boolean>(true);
+  const [isOfferNotFound, setIsOfferNotFound] = useState<boolean>(false);
 
   const curOffer = offers.find((item) => item.id === params.id);
 
   useEffect(() => {
-    if (params.id) {
-      if (!curOffer || !curOffer.description || !curOffer.images || curOffer.images.length === 0) {
-        dispatch(fetchOffer(params.id));
-      }
-      dispatch(fetchReviews(params.id));
-    }
-  }, [params.id, dispatch, curOffer]);
+    let isMounted = true;
 
-  if (isDataLoading && !curOffer) {
+    const loadOfferData = async () => {
+      if (!params.id) {
+        return;
+      }
+
+      setIsOfferLoading(true);
+      setIsOfferNotFound(false);
+
+      try {
+        await dispatch(fetchOffer(params.id)).unwrap();
+
+        if (!isMounted) {
+          return;
+        }
+
+        await Promise.all([
+          dispatch(fetchNearbyOffers(params.id)),
+          dispatch(fetchReviews(params.id)),
+        ]);
+      } catch {
+        if (isMounted) {
+          setIsOfferNotFound(true);
+        }
+      } finally {
+        if (isMounted) {
+          setIsOfferLoading(false);
+        }
+      }
+    };
+
+    loadOfferData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [params.id, dispatch]);
+
+  const nearbyToShow = useMemo(() => {
+    if (!curOffer) {
+      return [];
+    }
+
+    const getDistance = (a: Offer, b: Offer): number => {
+      const locA = a.location || a.city?.location;
+      const locB = b.location || b.city?.location;
+      if (!locA || !locB) {
+        return Number.POSITIVE_INFINITY;
+      }
+      const dx = locA.latitude - locB.latitude;
+      const dy = locA.longitude - locB.longitude;
+      return dx * dx + dy * dy;
+    };
+
+    return offers
+      .filter((offer) => offer.id !== curOffer.id)
+      .sort((a, b) => getDistance(curOffer, a) - getDistance(curOffer, b))
+      .slice(0, 3);
+  }, [offers, curOffer]);
+
+  if (isOfferLoading && !curOffer) {
     return <LoadingPage/>;
   }
 
-  if (!curOffer) {
+  if (isOfferNotFound || !curOffer) {
     return <NotFoundPage/>;
   }
 
-  const nearbyOffers = offers.filter(
-    (offer) => offer.city.name === curOffer.city.name && offer.id !== curOffer.id
-  ).slice(0, 3);
+  const handleNearbyOfferClick = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
 
   return (
     <div className="page">
@@ -144,14 +202,12 @@ export default function OfferPage(): JSX.Element {
               </div>
               <section className="offer__reviews reviews">
                 {(() => {
-                  const offerReviews = reviews?.filter((review) =>
-                    !review.offerId || review.offerId === curOffer.id
-                  ) || [];
+                  const offerReviews = reviews ?? [];
                   return (
                     <>
                       <h2 className="reviews__title">Reviews &middot; <span className="reviews__amount">{offerReviews.length}</span></h2>
                       <ReviewsList reviews={offerReviews}/>
-                      <ReviewForm/>
+                      {authStatus === AuthStatus.Auth && <ReviewForm offerId={curOffer.id}/>}
                     </>
                   );
                 })()}
@@ -161,7 +217,7 @@ export default function OfferPage(): JSX.Element {
           {curOffer.city && (
             <Map
               city={curOffer.city}
-              offers={[curOffer, ...nearbyOffers]}
+              offers={[curOffer, ...nearbyToShow]}
               selectedOffer={hoveredOffer || curOffer}
               className={MapClassName.Offer}
             />
@@ -169,9 +225,10 @@ export default function OfferPage(): JSX.Element {
         </section>
         <div className="container">
           <NearbyOffersList
-            offers={nearbyOffers}
+            offers={nearbyToShow}
             onOfferHover={setHoveredOffer}
             onOfferLeave={() => setHoveredOffer(null)}
+            onOfferClick={handleNearbyOfferClick}
           />
         </div>
       </main>

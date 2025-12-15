@@ -5,7 +5,7 @@ import PrivateRoute from '@components/private-route/private-route';
 import FavoritesPage from '@pages/favorites-page/favorites-page.tsx';
 import LoginPage from '@pages/login-page/login-page.tsx';
 import MainPage from '@pages/main-page/main-page.tsx';
-import OfferPage from '@pages//offer-page/offer-page.tsx';
+import OfferPage from '@pages/offer-page/offer-page.tsx';
 import NotFoundPage from '@pages/not-found-page/not-found-page';
 import { useStoreState } from '@store/index';
 import LoadingPage from '@pages/loading-page/loading-page';

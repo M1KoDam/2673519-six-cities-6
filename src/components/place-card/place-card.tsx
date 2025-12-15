@@ -8,9 +8,10 @@ type PlaceCardProps = {
   onCursorEnter: () => void;
   onCursorLeave: () => void;
   cardType: CardType;
+  onClickOffer?: () => void;
 }
 
-export default function PlaceCard({offer, onCursorEnter, onCursorLeave, cardType}: PlaceCardProps): JSX.Element {
+export default function PlaceCard({offer, onCursorEnter, onCursorLeave, cardType, onClickOffer}: PlaceCardProps): JSX.Element {
   return (
     <article className={`${cardType} place-card`}
       onMouseEnter={onCursorEnter}
@@ -21,7 +22,7 @@ export default function PlaceCard({offer, onCursorEnter, onCursorLeave, cardType
           <span>Premium</span>
         </div>}
       <div className={`${CardImageWrapperClass[cardType]} place-card__image-wrapper`}>
-        <Link to={`${AppRoute.Offer}/${offer.id}`}>
+        <Link to={`${AppRoute.Offer}/${offer.id}`} onClick={onClickOffer}>
           <img
             className="place-card__image"
             src={addTokenToImageUrl(offer.previewImage || offer.preview || (offer.images && offer.images[0]) || '')}
@@ -51,7 +52,7 @@ export default function PlaceCard({offer, onCursorEnter, onCursorLeave, cardType
           </div>
         </div>
         <h2 className="place-card__name">
-          <Link to={`${AppRoute.Offer}/${offer.id}`}>{offer.title}</Link>
+          <Link to={`${AppRoute.Offer}/${offer.id}`} onClick={onClickOffer}>{offer.title}</Link>
         </h2>
         <p className="place-card__type">{offer.type[0].toUpperCase() + offer.type.substring(1)}</p>
       </div>
