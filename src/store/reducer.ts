@@ -1,5 +1,5 @@
 import { createReducer } from '@reduxjs/toolkit';
-import { cityChanged, offersLoaded, offerUpdated, reviewsLoaded, sortTypeChecked, authRequired, setError, setDataLoadingStatus, setEmail } from './actions.js';
+import { cityChanged, offersLoaded, offerUpdated, reviewsLoaded, sortTypeChecked, authRequired, setError, setDataLoadingStatus, setEmail, nearbyOffersLoaded } from './actions.js';
 import { City, Offer, Review, SortType, AuthStatus } from '../types/index';
 import { Cities } from '@consts';
 
@@ -7,6 +7,7 @@ interface State {
   city: City;
   offers: Offer[];
   reviews: Review[];
+  nearbyOffers: Offer[];
   sortType: SortType;
   authStatus: AuthStatus;
   error: string | null;
@@ -18,8 +19,9 @@ const initState: State = {
   city: Cities.find((c) => c.city.name === 'Paris')?.city ?? Cities[0].city,
   offers: [],
   reviews: [],
+  nearbyOffers: [],
   sortType: SortType.Popular,
-  authStatus: AuthStatus.NoAuth,
+  authStatus: AuthStatus.Unknown,
   error: null,
   isDataLoading: false,
   email: ''
@@ -43,6 +45,9 @@ export const reducer = createReducer(initState, (builder) => {
     })
     .addCase(reviewsLoaded, (state, action) => {
       state.reviews = action.payload;
+    })
+    .addCase(nearbyOffersLoaded, (state, action) => {
+      state.nearbyOffers = action.payload;
     })
     .addCase(sortTypeChecked, (state, { payload }) => {
       state.sortType = payload;

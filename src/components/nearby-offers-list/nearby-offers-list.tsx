@@ -6,9 +6,10 @@ type NearbyOffersListProps = {
   offers: Offer[] | undefined;
   onOfferHover?: (offer: Offer) => void;
   onOfferLeave?: () => void;
+  onOfferClick?: () => void;
 };
 
-export default function NearbyOffersList({ offers, onOfferHover, onOfferLeave }: NearbyOffersListProps): JSX.Element {
+export default function NearbyOffersList({ offers, onOfferHover, onOfferLeave, onOfferClick }: NearbyOffersListProps): JSX.Element {
   return (
     <section className="near-places places">
       <h2 className="near-places__title">Other places in the neighbourhood</h2>
@@ -20,6 +21,7 @@ export default function NearbyOffersList({ offers, onOfferHover, onOfferLeave }:
               offer={offer}
               onCursorEnter={() => onOfferHover?.(offer)}
               onCursorLeave={() => onOfferLeave?.()}
+              onClickOffer={onOfferClick}
               cardType={CardType.Nearest}
             />
           ))

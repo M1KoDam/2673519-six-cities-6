@@ -6,6 +6,7 @@ export const cityChanged = createAction<City>('city/changeCity');
 export const offersLoaded = createAction<Offer[]>('offers/loadOffers');
 export const offerUpdated = createAction<Offer>('offers/updateOffer');
 export const reviewsLoaded = createAction<Review[]>('reviews/loadReviews');
+export const nearbyOffersLoaded = createAction<Offer[]>('offers/loadNearbyOffers');
 export const sortTypeChecked = createAction<SortType>('sort/checkSortType');
 export const authRequired = createAction<AuthStatus>('authRequired');
 export const setError = createAction<string | null>('setError');
