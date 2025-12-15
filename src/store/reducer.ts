@@ -1,6 +1,6 @@
 import { createReducer } from '@reduxjs/toolkit';
-import { cityChanged, offersLoaded, offerUpdated, reviewsLoaded, sortTypeChecked, authRequired, setError, setDataLoadingStatus, setEmail, nearbyOffersLoaded } from './actions.js';
-import { City, Offer, Review, SortType, AuthStatus } from '../types/index';
+import { cityChanged, offersLoaded, offerUpdated, reviewsLoaded, sortTypeChecked, authRequired, setError, setDataLoadingStatus, setUser, nearbyOffersLoaded } from './actions.js';
+import { City, Offer, Review, SortType, AuthStatus, User } from '../types/index';
 import { Cities } from '@consts';
 
 interface State {
@@ -12,7 +12,7 @@ interface State {
   authStatus: AuthStatus;
   error: string | null;
   isDataLoading: boolean;
-  email: string;
+  user: User | null;
 }
 
 const initState: State = {
@@ -24,7 +24,7 @@ const initState: State = {
   authStatus: AuthStatus.Unknown,
   error: null,
   isDataLoading: false,
-  email: ''
+  user: null
 };
 
 export const reducer = createReducer(initState, (builder) => {
@@ -61,7 +61,7 @@ export const reducer = createReducer(initState, (builder) => {
     .addCase(setDataLoadingStatus, (state, action) => {
       state.isDataLoading = action.payload;
     })
-    .addCase(setEmail, (state, { payload }) => {
-      state.email = payload;
+    .addCase(setUser, (state, action) => {
+      state.user = action.payload;
     });
 });

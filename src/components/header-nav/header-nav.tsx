@@ -11,7 +11,7 @@ type HeaderNavProps = {
 export default function HeaderNav({offers}: HeaderNavProps): JSX.Element {
   const dispatch = useStoreDispatch();
   const authStatus = useStoreState((state) => state.authStatus);
-  const email = useStoreState((state) => state.email);
+  const user = useStoreState((state) => state.user);
   const favoritesCount = offers.filter((offer) => offer.isFavorite).length;
 
   const handleLogoutClick = (evt: React.MouseEvent<HTMLAnchorElement>) => {
@@ -31,7 +31,7 @@ export default function HeaderNav({offers}: HeaderNavProps): JSX.Element {
               >
                 <div className="header__avatar-wrapper user__avatar-wrapper">
                 </div>
-                <span className="header__user-name user__name">{email}</span>
+                <span className="header__user-name user__name">{user?.email}</span>
                 <span className="header__favorite-count">{favoritesCount}</span>
               </Link>
             </li>

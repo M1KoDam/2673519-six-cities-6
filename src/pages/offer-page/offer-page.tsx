@@ -11,7 +11,7 @@ import HeaderNav from '@components/header-nav/header-nav';
 import { useStoreState, useStoreDispatch } from '@store/hooks';
 import { addTokenToImageUrl } from '../../utils/image-url';
 import { fetchOffer, fetchReviews, fetchNearbyOffers } from '@store/api-actions';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import LoadingPage from '@pages/loading-page/loading-page';
 import { AuthStatus, Offer } from '@types';
 
@@ -20,7 +20,6 @@ export default function OfferPage(): JSX.Element {
   const dispatch = useStoreDispatch();
   const offers = useStoreState((state) => state.offers);
   const reviews = useStoreState((state) => state.reviews);
-  const nearbyOffers = useStoreState((state) => state.nearbyOffers);
   const authStatus = useStoreState((state) => state.authStatus);
   const [hoveredOffer, setHoveredOffer] = useState<Offer | null>(null);
   const [isOfferLoading, setIsOfferLoading] = useState<boolean>(true);
@@ -68,6 +67,28 @@ export default function OfferPage(): JSX.Element {
     };
   }, [params.id, dispatch]);
 
+  const nearbyToShow = useMemo(() => {
+    if (!curOffer) {
+      return [];
+    }
+
+    const getDistance = (a: Offer, b: Offer): number => {
+      const locA = a.location || a.city?.location;
+      const locB = b.location || b.city?.location;
+      if (!locA || !locB) {
+        return Number.POSITIVE_INFINITY;
+      }
+      const dx = locA.latitude - locB.latitude;
+      const dy = locA.longitude - locB.longitude;
+      return dx * dx + dy * dy;
+    };
+
+    return offers
+      .filter((offer) => offer.id !== curOffer.id)
+      .sort((a, b) => getDistance(curOffer, a) - getDistance(curOffer, b))
+      .slice(0, 3);
+  }, [offers, curOffer]);
+
   if (isOfferLoading && !curOffer) {
     return <LoadingPage/>;
   }
@@ -75,8 +96,6 @@ export default function OfferPage(): JSX.Element {
   if (isOfferNotFound || !curOffer) {
     return <NotFoundPage/>;
   }
-
-  const nearbyToShow = nearbyOffers.slice(0, 3);
 
   const handleNearbyOfferClick = () => {
     window.scrollTo({

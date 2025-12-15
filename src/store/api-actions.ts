@@ -2,7 +2,7 @@ import { AxiosInstance, AxiosError } from 'axios';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { StoreDispatch, StoreState } from './types';
 import { Offer, Review } from '@types';
-import { offersLoaded, offerUpdated, reviewsLoaded, authRequired, setDataLoadingStatus, setEmail, nearbyOffersLoaded } from './actions';
+import { offersLoaded, offerUpdated, reviewsLoaded, authRequired, setDataLoadingStatus, setUser, nearbyOffersLoaded } from './actions';
 import { saveStorageToken, dropStorageToken } from '@services/token';
 import { APIRoute, AuthStatus } from '@types';
 import { User } from '@types';
@@ -10,11 +10,6 @@ import { User } from '@types';
 type AuthData = {
   email: string;
   password: string;
-};
-
-type LoginResponse = {
-  token: string;
-  user: User;
 };
 
 type ErrorResponse = {
@@ -65,13 +60,10 @@ export const checkAuth = createAsyncThunk<
     try {
       const { data } = await api.get<User>(APIRoute.Login);
       dispatch(authRequired(AuthStatus.Auth));
-      if (data.email) {
-        dispatch(setEmail(data.email));
-      }
+      dispatch(setUser(data));
       return data;
     } catch (error) {
       dispatch(authRequired(AuthStatus.NoAuth));
-      dispatch(setEmail(''));
       const errorMessage = error instanceof Error
         ? error.message
         : 'Authentication failed';
@@ -93,13 +85,13 @@ export const login = createAsyncThunk<
   'user/login',
   async ({ email, password }, { dispatch, extra: api, rejectWithValue }) => {
     try {
-      const { data } = await api.post<LoginResponse>(APIRoute.Login, { email, password });
+      const { data } = await api.post<User>(APIRoute.Login, { email, password });
 
       saveStorageToken(data.token);
       dispatch(authRequired(AuthStatus.Auth));
-      dispatch(setEmail(data.user.email));
+      dispatch(setUser(data));
 
-      return data.user;
+      return data;
     } catch (error) {
       let errorMessage = 'Login failed';
 
@@ -137,11 +129,11 @@ export const logout = createAsyncThunk<
       await api.delete(APIRoute.Logout);
       dropStorageToken();
       dispatch(authRequired(AuthStatus.NoAuth));
-      dispatch(setEmail(''));
+      dispatch(setUser(null));
     } catch (error) {
       dropStorageToken();
       dispatch(authRequired(AuthStatus.NoAuth));
-      dispatch(setEmail(''));
+      dispatch(setUser(null));
 
       const errorMessage = error instanceof Error
         ? error.message
