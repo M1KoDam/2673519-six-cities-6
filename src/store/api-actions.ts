@@ -1,4 +1,4 @@
-import { AxiosError, AxiosInstance } from 'axios';
+import { AxiosError, AxiosInstance, isAxiosError } from 'axios';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { StoreDispatch, StoreState } from '@store/types';
 import { Offer, Review, User, APIRoute, AuthStatus } from '@types';
@@ -96,7 +96,7 @@ export const login = createAsyncThunk<
     } catch (error) {
       let errorMessage = 'Login failed';
 
-      if (error instanceof AxiosError) {
+      if (isAxiosError(error)) {
         const axiosError = error as AxiosError<ErrorResponse>;
         const responseData = axiosError.response?.data;
 
@@ -176,7 +176,7 @@ export const fetchOfferDetails = createAsyncThunk<
 
       return offerResponse.data;
     } catch (error) {
-      if (error instanceof AxiosError && error.response?.status === 404) {
+      if (isAxiosError(error) && error.response?.status === 404) {
         return rejectWithValue('NOT_FOUND');
       }
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch offer details';
