@@ -3,12 +3,20 @@ import { Link } from 'react-router-dom';
 import { AppRoute, CardType } from '@consts';
 import PlaceCard from '@components/place-card/place-card';
 import HeaderNav from '@components/header-nav/header-nav';
-import { useStoreState } from '@store/hooks';
+import { useStoreDispatch, useStoreState } from '@store/hooks';
 import { getFavoriteCities, getFavoriteOffers } from '@store/offers-data/selectors';
+import { useEffect } from 'react';
+import { fetchFavorites } from '@store/api-actions';
 
 export default function FavoritesPage(): JSX.Element {
+  const dispatch = useStoreDispatch();
   const favorites = useStoreState(getFavoriteOffers);
   const cities = useStoreState(getFavoriteCities);
+
+  useEffect(() => {
+    dispatch(fetchFavorites());
+  }, [dispatch]);
+
   return (
     <div className="page">
       <Helmet>

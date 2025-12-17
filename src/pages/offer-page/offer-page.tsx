@@ -1,16 +1,15 @@
 import { Helmet } from 'react-helmet-async';
 import ReviewForm from '@components/review-form/review-form';
-import { AppRoute } from '@consts';
-import {useParams} from 'react-router-dom';
+import { AppRoute, MapClassName } from '@consts';
+import {useParams, useNavigate} from 'react-router-dom';
 import NotFoundPage from '@pages/not-found-page/not-found-page';
 import ReviewsList from '@components/review-list/review-list';
 import Map from '@components/map/map';
 import NearbyOffersList from '@components/nearby-offers-list/nearby-offers-list';
-import { MapClassName } from '@consts';
 import HeaderNav from '@components/header-nav/header-nav';
 import { useStoreState, useStoreDispatch } from '@store/hooks';
 import { addTokenToImageUrl } from '@utils/image-url';
-import { fetchOfferDetails } from '@store/api-actions';
+import { fetchOfferDetails, toggleFavorite } from '@store/api-actions';
 import { useEffect, useState, useMemo } from 'react';
 import LoadingPage from '@pages/loading-page/loading-page';
 import { AuthStatus, Offer } from '@types';
@@ -20,7 +19,10 @@ import { getAuthorizationStatus } from '@store/user-data/selectors';
 export default function OfferPage(): JSX.Element {
   const params = useParams();
   const dispatch = useStoreDispatch();
+  const navigate = useNavigate();
   const authStatus = useStoreState(getAuthorizationStatus);
+  const addTokenToImageUrlSafe = addTokenToImageUrl as (url: string) => string;
+  const toggleFavoriteSafe = toggleFavorite as (args: { offerId: string; status: 0 | 1 }) => unknown;
   const curOffer = useStoreState(getOfferInDetails);
   const reviews = useStoreState(getReviews);
   const nearbyOffers = useStoreState(getNearbyOffers);
@@ -76,6 +78,16 @@ export default function OfferPage(): JSX.Element {
     });
   };
 
+  const handleBookmarkClick = () => {
+    if (authStatus !== AuthStatus.Auth) {
+      navigate(AppRoute.Login);
+      return;
+    }
+
+    const nextStatus: 0 | 1 = curOffer.isFavorite ? 0 : 1;
+    dispatch(toggleFavoriteSafe({ offerId: curOffer.id, status: nextStatus }) as never);
+  };
+
   return (
     <div className="page">
       <Helmet>
@@ -99,11 +111,11 @@ export default function OfferPage(): JSX.Element {
           <div className="offer__gallery-container container">
             <div className="offer__gallery">
               {
-                (curOffer.images || []).map((image) => (
+                (curOffer.images || []).map((image: string) => (
                   <div key={image} className="offer__image-wrapper">
                     <img
                       className="offer__image"
-                      src={addTokenToImageUrl(image)}
+                      src={addTokenToImageUrlSafe(image)}
                       alt="Photo studio"
                     />
                   </div>
@@ -124,7 +136,11 @@ export default function OfferPage(): JSX.Element {
                 <h1 className="offer__name">
                   {curOffer.title}
                 </h1>
-                <button className={`offer__bookmark-button ${curOffer.isFavorite && 'offer__bookmark-button--active'} button`} type="button">
+                <button
+                  className={`offer__bookmark-button ${curOffer.isFavorite ? 'offer__bookmark-button--active' : ''} button`}
+                  type="button"
+                  onClick={handleBookmarkClick}
+                >
                   <svg className="offer__bookmark-icon" width="31" height="33">
                     <use xlinkHref="#icon-bookmark"></use>
                   </svg>
@@ -162,7 +178,7 @@ export default function OfferPage(): JSX.Element {
                 {curOffer.host && (
                   <div className="offer__host-user user">
                     <div className={`offer__avatar-wrapper ${curOffer.host.isPro && 'offer__avatar-wrapper--pro'} user__avatar-wrapper`}>
-                      <img className="offer__avatar user__avatar" src={addTokenToImageUrl(curOffer.host.avatarUrl || '')} width="74" height="74" alt="Host avatar" />
+                      <img className="offer__avatar user__avatar" src={addTokenToImageUrlSafe(curOffer.host.avatarUrl || '')} width="74" height="74" alt="Host avatar" />
                     </div>
                     <span className="offer__user-name">{curOffer.host.name || ''}</span>
                     {curOffer.host.isPro && <span className="offer__user-status">Pro</span>}

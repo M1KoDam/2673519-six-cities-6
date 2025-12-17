@@ -7,6 +7,7 @@ import CitiesList from '@components/cities-list/cities-list';
 import { useStoreState } from '@store/hooks';
 import SortingOptions from '@components/offers-sorting/sorting-options';
 import HeaderNav from '@components/header-nav/header-nav';
+import MainEmpty from '@components/main-empty/main-empty';
 import { getCity } from '@store/app-data/selectors';
 import { getOffers, getSortedOffersByActiveCity } from '@store/offers-data/selectors';
 
@@ -20,6 +21,8 @@ export default function MainPage(): JSX.Element {
     () => offers.find((offer) => offer.id === activeOfferId),
     [offers, activeOfferId]
   );
+
+  const isEmpty = currentCityOffers.length === 0;
 
   return (
     <div className="page page--gray page--main">
@@ -39,31 +42,35 @@ export default function MainPage(): JSX.Element {
         </div>
       </header>
 
-      <main className="page__main page__main--index">
+      <main className={`page__main page__main--index${isEmpty ? ' page__main--index-empty' : ''}`}>
         <h1 className="visually-hidden">Cities</h1>
         <div className="tabs">
           <section className="locations container">
             <CitiesList/>
           </section>
         </div>
-        <div className="cities">
-          <div className="cities__places-container container">
-            <section className="cities__places places">
-              <h2 className="visually-hidden">Places</h2>
-              <b className="places__found">{`${currentCityOffers.length} places to stay in ${stateCity.name}`}</b>
-              <SortingOptions/>
-              <OffersList offers={currentCityOffers} onActiveOfferChange={setActiveOfferId}/>
-            </section>
-            <div className="cities__right-section">
-              <Map
-                city={stateCity}
-                offers={currentCityOffers}
-                selectedOffer={selectedOffer}
-                className={MapClassName.Main}
-              />
+        {isEmpty ? (
+          <MainEmpty cityName={stateCity.name} />
+        ) : (
+          <div className="cities">
+            <div className="cities__places-container container">
+              <section className="cities__places places">
+                <h2 className="visually-hidden">Places</h2>
+                <b className="places__found">{`${currentCityOffers.length} places to stay in ${stateCity.name}`}</b>
+                <SortingOptions/>
+                <OffersList offers={currentCityOffers} onActiveOfferChange={setActiveOfferId}/>
+              </section>
+              <div className="cities__right-section">
+                <Map
+                  city={stateCity}
+                  offers={currentCityOffers}
+                  selectedOffer={selectedOffer}
+                  className={MapClassName.Main}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );

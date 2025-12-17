@@ -7,7 +7,7 @@ import LoginPage from '@pages/login-page/login-page.tsx';
 import MainPage from '@pages/main-page/main-page.tsx';
 import OfferPage from '@pages/offer-page/offer-page.tsx';
 import NotFoundPage from '@pages/not-found-page/not-found-page';
-import { useStoreState } from '@store/index';
+import { useStoreState } from '@store/hooks';
 import LoadingPage from '@pages/loading-page/loading-page';
 import { AuthStatus } from '@types';
 import { getAuthorizationStatus } from '@store/user-data/selectors';

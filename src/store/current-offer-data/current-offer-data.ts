@@ -34,7 +34,18 @@ export const currentOfferData = createSlice({
     setOfferInDetailsDataLoadingStatus: (state, action: PayloadAction<boolean>) => {
       state.isOfferInDetailsDataLoading = action.payload;
     },
+    updateOfferInDetails: (state, action: PayloadAction<Offer>) => {
+      const updatedOffer = action.payload;
+
+      if (state.offerInfo?.id === updatedOffer.id) {
+        state.offerInfo = updatedOffer;
+      }
+
+      state.nearbyOffers = state.nearbyOffers.map((offer) =>
+        offer.id === updatedOffer.id ? updatedOffer : offer
+      );
+    },
   },
 });
 
-export const { loadOfferInDetails, reviewsLoaded, addReview, setOfferInDetailsDataLoadingStatus } = currentOfferData.actions;
+export const { loadOfferInDetails, reviewsLoaded, addReview, setOfferInDetailsDataLoadingStatus, updateOfferInDetails } = currentOfferData.actions;
