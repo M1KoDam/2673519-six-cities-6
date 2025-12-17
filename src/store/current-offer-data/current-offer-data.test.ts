@@ -39,8 +39,8 @@ const makeReview = (partial: Partial<Review> & { id: string }): Review => ({
   offerId: partial.offerId,
 });
 
-describe('currentOfferData reducer', () => {
-  it('returns initial state with unknown action', () => {
+describe('CurrentOfferData reducer', () => {
+  it('Returns initial state with unknown action', () => {
     const state = currentOfferData.reducer(undefined, { type: 'UNKNOWN' });
 
     expect(state).toEqual({
@@ -51,7 +51,7 @@ describe('currentOfferData reducer', () => {
     });
   });
 
-  it('handles loadOfferInDetails', () => {
+  it('Handles loadOfferInDetails', () => {
     const offerInfo = makeOffer({ id: '1', title: 'Details' });
     const nearestOffers = [makeOffer({ id: '2' }), makeOffer({ id: '3' })];
     const reviews = [makeReview({ id: 'r1' }), makeReview({ id: 'r2' })];
@@ -66,27 +66,27 @@ describe('currentOfferData reducer', () => {
     expect(state.reviews).toEqual(reviews);
   });
 
-  it('handles reviewsLoaded', () => {
+  it('Handles reviewsLoaded', () => {
     const reviews = [makeReview({ id: 'r1' })];
     const state = currentOfferData.reducer(undefined, reviewsLoaded(reviews));
 
     expect(state.reviews).toEqual(reviews);
   });
 
-  it('handles addReview', () => {
+  it('Handles addReview', () => {
     const review = makeReview({ id: 'r1' });
     const state = currentOfferData.reducer(undefined, addReview(review));
 
     expect(state.reviews).toEqual([review]);
   });
 
-  it('handles setOfferInDetailsDataLoadingStatus', () => {
+  it('Handles setOfferInDetailsDataLoadingStatus', () => {
     const state = currentOfferData.reducer(undefined, setOfferInDetailsDataLoadingStatus(true));
 
     expect(state.isOfferInDetailsDataLoading).toBe(true);
   });
 
-  it('handles updateOfferInDetails (updates offerInfo and nearbyOffers if ids match)', () => {
+  it('Handles updateOfferInDetails (updates offerInfo and nearbyOffers if ids match)', () => {
     const offerInfo = makeOffer({ id: '1', title: 'Old' });
     const nearbyOffers = [makeOffer({ id: '2', title: 'Nearby Old' }), makeOffer({ id: '3' })];
     const initial = {

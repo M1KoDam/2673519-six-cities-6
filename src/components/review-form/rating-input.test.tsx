@@ -3,9 +3,9 @@ import { render, screen } from '@testing-library/react';
 import RatingInput from './rating-input';
 
 describe('Component: RatingInput', () => {
-  it('renders radio input and label', () => {
+  it('Renders radio input and label', () => {
     const onChange = vi.fn();
-    render(<RatingInput value={5} title="perfect" checked={true} onChange={onChange} />);
+    render(<RatingInput value={5} title="perfect" checked onChange={onChange} />);
 
     const radio = screen.getByRole('radio');
     expect(radio).toHaveAttribute('id', '5-stars');

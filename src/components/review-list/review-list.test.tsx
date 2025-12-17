@@ -18,13 +18,13 @@ const makeReview = (id: string, date: string, comment: string): Review => ({
 });
 
 describe('Component: ReviewsList', () => {
-  it('renders placeholder when there are no reviews', () => {
+  it('Renders placeholder when there are no reviews', () => {
     render(<ReviewsList reviews={undefined} />);
 
     expect(screen.getByText('No reviews available')).toBeInTheDocument();
   });
 
-  it('renders and sorts reviews by date desc', () => {
+  it('Renders and sorts reviews by date desc', () => {
     const reviews: Review[] = [
       makeReview('r1', '2023-05-01T12:00:00.000Z', 'Older'),
       makeReview('r2', '2023-06-01T12:00:00.000Z', 'Newer'),

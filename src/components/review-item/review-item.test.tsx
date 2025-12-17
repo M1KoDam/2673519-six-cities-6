@@ -4,7 +4,7 @@ import ReviewItem from './review-item';
 import { Review } from '@types';
 
 describe('Component: ReviewItem', () => {
-  it('renders review content', () => {
+  it('Renders review content', () => {
     const review: Review = {
       id: 'r1',
       date: '2023-06-01T12:00:00.000Z',

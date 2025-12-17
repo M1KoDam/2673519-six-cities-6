@@ -37,8 +37,8 @@ const makeStore = (preloadedState?: unknown) =>
     preloadedState: preloadedState as never,
   });
 
-describe('App routing', () => {
-  it('renders LoadingPage when authorization status is Unknown', () => {
+describe('App Routing', () => {
+  it('Renders LoadingPage when authorization status is Unknown', () => {
     window.history.pushState({}, '', '/');
 
     const store = makeStore({
@@ -57,7 +57,7 @@ describe('App routing', () => {
     expect(screen.getByText('LoadingPage')).toBeInTheDocument();
   });
 
-  it('renders LoginPage on /login', () => {
+  it('Renders LoginPage on /login', () => {
     window.history.pushState({}, '', '/login');
 
     const store = makeStore({
@@ -76,7 +76,7 @@ describe('App routing', () => {
     expect(screen.getByText('LoginPage')).toBeInTheDocument();
   });
 
-  it('renders NotFoundPage on unknown route', () => {
+  it('Renders NotFoundPage on unknown route', () => {
     window.history.pushState({}, '', '/some-unknown-route');
 
     const store = makeStore({
@@ -95,7 +95,7 @@ describe('App routing', () => {
     expect(screen.getByText('NotFoundPage')).toBeInTheDocument();
   });
 
-  it('redirects /favorites to /login when user is not authorized', () => {
+  it('Redirects /favorites to /login when user is not authorized', () => {
     window.history.pushState({}, '', '/favorites');
 
     const store = makeStore({
@@ -114,7 +114,7 @@ describe('App routing', () => {
     expect(screen.getByText('LoginPage')).toBeInTheDocument();
   });
 
-  it('renders FavoritesPage on /favorites when user is authorized', () => {
+  it('Renders FavoritesPage on /favorites when user is authorized', () => {
     window.history.pushState({}, '', '/favorites');
 
     const store = makeStore({

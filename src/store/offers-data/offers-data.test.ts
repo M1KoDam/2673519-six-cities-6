@@ -17,8 +17,8 @@ const makeOffer = (partial: Partial<Offer> & { id: string }): Offer => ({
   description: partial.description,
 });
 
-describe('offersData reducer', () => {
-  it('returns initial state with unknown action', () => {
+describe('OffersData reducer', () => {
+  it('Returns initial state with unknown action', () => {
     const state = offersData.reducer(undefined, { type: 'UNKNOWN' });
 
     expect(state).toEqual({
@@ -28,20 +28,20 @@ describe('offersData reducer', () => {
     });
   });
 
-  it('handles loadOffers', () => {
+  it('Handles loadOffers', () => {
     const offers = [makeOffer({ id: '1' }), makeOffer({ id: '2', isFavorite: true })];
     const state = offersData.reducer(undefined, loadOffers(offers));
 
     expect(state.offers).toEqual(offers);
   });
 
-  it('handles setOffersDataLoadingStatus', () => {
+  it('Handles setOffersDataLoadingStatus', () => {
     const state = offersData.reducer(undefined, setOffersDataLoadingStatus(true));
 
     expect(state.isOffersDataLoading).toBe(true);
   });
 
-  it('handles updateFavoritesCount (toggles favorite and recalculates count)', () => {
+  it('Handles updateFavoritesCount (toggles favorite and recalculates count)', () => {
     const initial = {
       offers: [
         makeOffer({ id: '1', isFavorite: false }),
@@ -57,7 +57,7 @@ describe('offersData reducer', () => {
     expect(state.favoritesCount).toBe(2);
   });
 
-  it('handles updateOffer (updates existing offer)', () => {
+  it('Handles updateOffer (updates existing offer)', () => {
     const offerV1 = makeOffer({ id: '1', title: 'Old' });
     const offerV2 = makeOffer({ id: '1', title: 'New' });
     const initial = {
@@ -72,7 +72,7 @@ describe('offersData reducer', () => {
     expect(state.offers[0]).toEqual(offerV2);
   });
 
-  it('handles updateOffer (adds new offer if not present)', () => {
+  it('Handles updateOffer (adds new offer if not present)', () => {
     const initial = {
       offers: [makeOffer({ id: '1' })],
       isOffersDataLoading: false,

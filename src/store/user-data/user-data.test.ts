@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { userData, setAuthorizationStatus, setUser } from './user-data';
 import { AuthStatus, User } from '@types';
 
-describe('userData reducer', () => {
-  it('returns initial state with unknown action', () => {
+describe('UserData reducer', () => {
+  it('Returns initial state with unknown action', () => {
     const state = userData.reducer(undefined, { type: 'UNKNOWN' });
 
     expect(state).toEqual({
@@ -12,13 +12,13 @@ describe('userData reducer', () => {
     });
   });
 
-  it('handles setAuthorizationStatus', () => {
+  it('Handles setAuthorizationStatus', () => {
     const state = userData.reducer(undefined, setAuthorizationStatus(AuthStatus.Auth));
 
     expect(state.authorizationStatus).toBe(AuthStatus.Auth);
   });
 
-  it('handles setUser', () => {
+  it('Handles setUser', () => {
     const user: User = {
       name: 'Test',
       avatarUrl: 'img/avatar.jpg',

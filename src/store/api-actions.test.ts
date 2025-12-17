@@ -57,7 +57,7 @@ const createTestStore = (api = axios.create()) => {
   const actions: AnyAction[] = [];
   const actionRecorder: Middleware = () => (next) => (action) => {
     actions.push(action as AnyAction);
-    return next(action);
+    next(action);
   };
 
   const store = configureStore({
@@ -73,8 +73,8 @@ const createTestStore = (api = axios.create()) => {
   return { store, actions };
 };
 
-describe('api-actions (async thunks)', () => {
-  it('fetchOffers dispatches loading flags and stores offers on success', async () => {
+describe('API actions (async thunks)', () => {
+  it('FetchOffers dispatches loading flags and stores offers on success', async () => {
     const api = axios.create();
     const mockApi = new MockAdapter(api);
     const offers = [makeOffer({ id: '1' }), makeOffer({ id: '2', isFavorite: true })];
@@ -83,7 +83,7 @@ describe('api-actions (async thunks)', () => {
     const { store, actions } = createTestStore(api);
     await store.dispatch(fetchOffers());
 
-    const types = actions.map((a) => a.type);
+    const types = actions.map((a) => a.type as string);
     expect(actions).toEqual(expect.arrayContaining([
       expect.objectContaining({ type: setOffersDataLoadingStatus.type, payload: true }),
       expect.objectContaining({ type: loadOffers.type, payload: offers }),
@@ -99,7 +99,7 @@ describe('api-actions (async thunks)', () => {
     expect(store.getState().OFFERS.offers).toEqual(offers);
   });
 
-  it('fetchOffers dispatches loading flag false even on failure', async () => {
+  it('FetchOffers dispatches loading flag false even on failure', async () => {
     const api = axios.create();
     const mockApi = new MockAdapter(api);
     mockApi.onGet(APIRoute.Offers).networkError();
@@ -115,7 +115,7 @@ describe('api-actions (async thunks)', () => {
     expect(actions.some((a) => a.type === loadOffers.type)).toBe(false);
   });
 
-  it('checkAuth sets Auth status and user on success', async () => {
+  it('CheckAuth sets Auth status and user on success', async () => {
     const api = axios.create();
     const mockApi = new MockAdapter(api);
     const user = makeUser({ email: 'auth@example.com' });
@@ -133,7 +133,7 @@ describe('api-actions (async thunks)', () => {
     expect(store.getState().USER.authorizationStatus).toBe(AuthStatus.Auth);
   });
 
-  it('checkAuth sets NoAuth and null user on failure', async () => {
+  it('CheckAuth sets NoAuth and null user on failure', async () => {
     const api = axios.create();
     const mockApi = new MockAdapter(api);
     mockApi.onGet(APIRoute.Login).reply(401);
@@ -148,7 +148,7 @@ describe('api-actions (async thunks)', () => {
     ]));
   });
 
-  it('fetchOfferDetails loads offer, nearby and reviews on success', async () => {
+  it('FetchOfferDetails loads offer, nearby and reviews on success', async () => {
     const api = axios.create();
     const mockApi = new MockAdapter(api);
     const offerId = '10';
@@ -179,7 +179,7 @@ describe('api-actions (async thunks)', () => {
     expect(store.getState().CURRENT_OFFER.reviews).toEqual(reviews);
   });
 
-  it('fetchOfferDetails rejects with NOT_FOUND on 404', async () => {
+  it('FetchOfferDetails rejects with NOT_FOUND on 404', async () => {
     const api = axios.create();
     const mockApi = new MockAdapter(api);
     const offerId = '404';
@@ -200,7 +200,7 @@ describe('api-actions (async thunks)', () => {
     expect(store.getState().CURRENT_OFFER.offerInfo).toBeNull();
   });
 
-  it('fetchReviews stores reviews on success', async () => {
+  it('FetchReviews stores reviews on success', async () => {
     const api = axios.create();
     const mockApi = new MockAdapter(api);
     const offerId = '1';
@@ -217,7 +217,7 @@ describe('api-actions (async thunks)', () => {
     expect(store.getState().CURRENT_OFFER.reviews).toEqual(reviews);
   });
 
-  it('sendReview adds a review on success', async () => {
+  it('SendReview adds a review on success', async () => {
     const api = axios.create();
     const mockApi = new MockAdapter(api);
     const offerId = '1';
@@ -234,7 +234,7 @@ describe('api-actions (async thunks)', () => {
     expect(store.getState().CURRENT_OFFER.reviews).toEqual([review]);
   });
 
-  it('fetchFavorites updates offers in store for each favorite', async () => {
+  it('FetchFavorites updates offers in store for each favorite', async () => {
     const api = axios.create();
     const mockApi = new MockAdapter(api);
     const favorites = [makeOffer({ id: '1', isFavorite: true }), makeOffer({ id: '2', isFavorite: true })];
@@ -249,7 +249,7 @@ describe('api-actions (async thunks)', () => {
     expect(store.getState().OFFERS.offers).toEqual(expect.arrayContaining(favorites));
   });
 
-  it('toggleFavorite updates offers and offer details', async () => {
+  it('ToggleFavorite updates offers and offer details', async () => {
     const api = axios.create();
     const mockApi = new MockAdapter(api);
     const offerId = '1';
