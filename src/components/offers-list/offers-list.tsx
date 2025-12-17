@@ -1,6 +1,6 @@
 import { Offer } from '@types';
 import PlaceCard from '@components/place-card/place-card.js';
-import { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { CardType } from '@consts';
 
 type OffersListProps = {
@@ -8,20 +8,20 @@ type OffersListProps = {
     onActiveOfferChange: (offerId: string | null) => void;
 };
 
-export default function OffersList({offers, onActiveOfferChange}: OffersListProps): JSX.Element {
+function OffersList({offers, onActiveOfferChange}: OffersListProps): JSX.Element {
   const [activeOfferId, setActiveOfferId] = useState<string | null>(null);
 
   useEffect(() => {
     onActiveOfferChange(activeOfferId);
   }, [activeOfferId, onActiveOfferChange]);
 
-  const handleCursorEnter = (offerId: string) => {
+  const handleCursorEnter = useCallback((offerId: string) => {
     setActiveOfferId(offerId);
-  };
+  }, []);
 
-  const handleCursorLeave = () => {
+  const handleCursorLeave = useCallback(() => {
     setActiveOfferId(null);
-  };
+  }, []);
 
   return (
     <div className="cities__places-list places__list tabs__content">
@@ -36,3 +36,8 @@ export default function OffersList({offers, onActiveOfferChange}: OffersListProp
     </div>
   );
 }
+
+const MemoizedOffersList = React.memo(OffersList);
+MemoizedOffersList.displayName = 'OffersList';
+
+export default MemoizedOffersList;

@@ -1,26 +1,27 @@
-import { useState, KeyboardEvent } from 'react';
+import { useCallback, useState, KeyboardEvent } from 'react';
 import { SortType } from '@types';
 import { useStoreDispatch, useStoreState } from '@store/hooks';
-import { sortTypeChecked } from '@store/actions';
+import { sortTypeChecked } from '@store/app-data/app-data';
+import { getSortType } from '@store/app-data/selectors';
 
 export default function SortingOptions(): JSX.Element {
   const dispatch = useStoreDispatch();
-  const currentSortType = useStoreState((state) => state.sortType);
+  const currentSortType = useStoreState(getSortType);
   const [isOpen, setIsOpen] = useState(false);
 
-  const toggleMenu = () => setIsOpen((prev) => !prev);
+  const toggleMenu = useCallback(() => setIsOpen((prev) => !prev), []);
 
-  const handleOptionSelect = (sortType: SortType) => {
+  const handleOptionSelect = useCallback((sortType: SortType) => {
     dispatch(sortTypeChecked(sortType));
     setIsOpen(false);
-  };
+  }, [dispatch]);
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLLIElement>, sortType: SortType) => {
+  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLLIElement>, sortType: SortType) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleOptionSelect(sortType);
     }
-  };
+  }, [handleOptionSelect]);
 
   return (
     <form className="places__sorting" action="#" method="get">

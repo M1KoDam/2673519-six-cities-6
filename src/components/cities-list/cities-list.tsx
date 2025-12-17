@@ -1,15 +1,17 @@
-import { cityChanged, useStoreDispatch } from '@store/index';
-import { useStoreState } from '@store/hooks';
+import { useCallback } from 'react';
+import { useStoreDispatch, useStoreState } from '@store/hooks';
+import { cityChanged } from '@store/app-data/app-data';
+import { getCity } from '@store/app-data/selectors';
 import { City } from '@types';
 import { Cities } from '@consts';
 
 export default function CitiesList(): JSX.Element {
   const dispatch = useStoreDispatch();
-  const activeCity = useStoreState((state) => state.city);
+  const activeCity = useStoreState(getCity);
 
-  const handleCityChange = (city: City) => {
+  const handleCityChange = useCallback((city: City) => {
     dispatch(cityChanged(city));
-  };
+  }, [dispatch]);
 
   return (
     <ul className="locations__list tabs__list">

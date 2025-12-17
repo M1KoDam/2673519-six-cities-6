@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { getStorageToken } from './token';
-import { AuthStatus } from '../types/auth-status.enum';
-import { authRequired } from '../store/actions';
+import { AuthStatus } from '@types';
+import { setAuthorizationStatus } from '@store/user-data/user-data';
 
 const BASE_URL = 'https://14.design.htmlacademy.pro/six-cities';
 const TIMEOUT = 5000;
@@ -18,9 +18,9 @@ export class ServerUnavailableError extends Error {
   }
 }
 
-let dispatchFunction: ((action: ReturnType<typeof authRequired>) => void) | null = null;
+let dispatchFunction: ((action: ReturnType<typeof setAuthorizationStatus>) => void) | null = null;
 
-export const setDispatch = (dispatch: (action: ReturnType<typeof authRequired>) => void) => {
+export const setDispatch = (dispatch: (action: ReturnType<typeof setAuthorizationStatus>) => void) => {
   dispatchFunction = dispatch;
 };
 
@@ -50,7 +50,7 @@ export const createAPI = (): AxiosInstance => {
       }
 
       if (error.response.status === 401 && dispatchFunction) {
-        dispatchFunction(authRequired(AuthStatus.NoAuth));
+        dispatchFunction(setAuthorizationStatus(AuthStatus.NoAuth));
       }
 
       throw error;

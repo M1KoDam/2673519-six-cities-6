@@ -1,5 +1,5 @@
 import { Review } from '@types';
-import { addTokenToImageUrl } from '../../utils/image-url';
+import { addTokenToImageUrl } from '@utils/image-url';
 
 type ReviewItemProps = {
   review: Review;

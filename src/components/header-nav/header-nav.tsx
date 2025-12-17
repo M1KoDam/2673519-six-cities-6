@@ -1,18 +1,17 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { AppRoute } from '@consts';
-import { Offer, AuthStatus } from '@types';
-import { useStoreDispatch, useStoreState } from '@store/index';
+import { AuthStatus } from '@types';
+import { useStoreDispatch, useStoreState } from '@store/hooks';
 import { logout } from '@store/api-actions';
+import { getAuthorizationStatus, getUser } from '@store/user-data/selectors';
+import { getFavoritesCount } from '@store/offers-data/selectors';
 
-type HeaderNavProps = {
-  offers: Offer[];
-};
-
-export default function HeaderNav({offers}: HeaderNavProps): JSX.Element {
+function HeaderNav(): JSX.Element {
   const dispatch = useStoreDispatch();
-  const authStatus = useStoreState((state) => state.authStatus);
-  const user = useStoreState((state) => state.user);
-  const favoritesCount = offers.filter((offer) => offer.isFavorite).length;
+  const authStatus = useStoreState(getAuthorizationStatus);
+  const user = useStoreState(getUser);
+  const favoritesCount = useStoreState(getFavoritesCount);
 
   const handleLogoutClick = (evt: React.MouseEvent<HTMLAnchorElement>) => {
     evt.preventDefault();
@@ -61,3 +60,8 @@ export default function HeaderNav({offers}: HeaderNavProps): JSX.Element {
     </nav>
   );
 }
+
+const MemoizedHeaderNav = React.memo(HeaderNav);
+MemoizedHeaderNav.displayName = 'HeaderNav';
+
+export default MemoizedHeaderNav;
