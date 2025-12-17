@@ -10,12 +10,14 @@ import NotFoundPage from '@pages/not-found-page/not-found-page';
 import { useStoreState } from '@store/index';
 import LoadingPage from '@pages/loading-page/loading-page';
 import { AuthStatus } from '@types';
+import { getAuthorizationStatus } from '@store/user-data/selectors';
+import { getOffersDataLoadingStatus } from '@store/offers-data/selectors';
 
 export default function App(): JSX.Element {
-  const authStatus = useStoreState((state) => state.authStatus);
-  const isDataLoading = useStoreState((state) => state.isDataLoading);
+  const authStatus = useStoreState(getAuthorizationStatus);
+  const isOffersLoading = useStoreState(getOffersDataLoadingStatus);
 
-  if (authStatus === AuthStatus.Unknown || isDataLoading) {
+  if (authStatus === AuthStatus.Unknown || isOffersLoading) {
     return (
       <LoadingPage/>
     );

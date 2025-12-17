@@ -1,7 +1,7 @@
 import { Offer } from '@types';
 import { Link } from 'react-router-dom';
 import { AppRoute, CardImageWrapperClass, CardType } from '@consts';
-import { addTokenToImageUrl } from '../../utils/image-url';
+import { addTokenToImageUrl } from '@utils/image-url';
 
 type PlaceCardProps = {
   offer: Offer;

@@ -5,11 +5,12 @@ import { fetchOffers, login } from '@store/api-actions';
 import { useNavigate } from 'react-router-dom';
 import { AppRoute } from '@consts';
 import { AuthStatus } from '@types';
+import { getAuthorizationStatus } from '@store/user-data/selectors';
 
 export default function LoginPage() : JSX.Element {
   const dispatch = useStoreDispatch();
   const navigate = useNavigate();
-  const authStatus = useStoreState((state) => state.authStatus);
+  const authStatus = useStoreState(getAuthorizationStatus);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState<string>('');

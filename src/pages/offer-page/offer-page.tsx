@@ -9,23 +9,24 @@ import NearbyOffersList from '@components/nearby-offers-list/nearby-offers-list'
 import { MapClassName } from '@consts';
 import HeaderNav from '@components/header-nav/header-nav';
 import { useStoreState, useStoreDispatch } from '@store/hooks';
-import { addTokenToImageUrl } from '../../utils/image-url';
-import { fetchOffer, fetchReviews, fetchNearbyOffers } from '@store/api-actions';
+import { addTokenToImageUrl } from '@utils/image-url';
+import { fetchOfferDetails } from '@store/api-actions';
 import { useEffect, useState, useMemo } from 'react';
 import LoadingPage from '@pages/loading-page/loading-page';
 import { AuthStatus, Offer } from '@types';
+import { getOfferInDetails, getNearbyOffers, getOfferInDetailsDataLoadingStatus, getReviews } from '@store/current-offer-data/selectors';
+import { getAuthorizationStatus } from '@store/user-data/selectors';
 
 export default function OfferPage(): JSX.Element {
   const params = useParams();
   const dispatch = useStoreDispatch();
-  const offers = useStoreState((state) => state.offers);
-  const reviews = useStoreState((state) => state.reviews);
-  const authStatus = useStoreState((state) => state.authStatus);
+  const authStatus = useStoreState(getAuthorizationStatus);
+  const curOffer = useStoreState(getOfferInDetails);
+  const reviews = useStoreState(getReviews);
+  const nearbyOffers = useStoreState(getNearbyOffers);
+  const isOfferLoading = useStoreState(getOfferInDetailsDataLoadingStatus);
   const [hoveredOffer, setHoveredOffer] = useState<Offer | null>(null);
-  const [isOfferLoading, setIsOfferLoading] = useState<boolean>(true);
   const [isOfferNotFound, setIsOfferNotFound] = useState<boolean>(false);
-
-  const curOffer = offers.find((item) => item.id === params.id);
 
   useEffect(() => {
     let isMounted = true;
@@ -34,28 +35,13 @@ export default function OfferPage(): JSX.Element {
       if (!params.id) {
         return;
       }
-
-      setIsOfferLoading(true);
       setIsOfferNotFound(false);
 
       try {
-        await dispatch(fetchOffer(params.id)).unwrap();
-
-        if (!isMounted) {
-          return;
-        }
-
-        await Promise.all([
-          dispatch(fetchNearbyOffers(params.id)),
-          dispatch(fetchReviews(params.id)),
-        ]);
+        await dispatch(fetchOfferDetails(params.id)).unwrap();
       } catch {
         if (isMounted) {
           setIsOfferNotFound(true);
-        }
-      } finally {
-        if (isMounted) {
-          setIsOfferLoading(false);
         }
       }
     };
@@ -68,26 +54,12 @@ export default function OfferPage(): JSX.Element {
   }, [params.id, dispatch]);
 
   const nearbyToShow = useMemo(() => {
-    if (!curOffer) {
+    const current = curOffer;
+    if (!current) {
       return [];
     }
-
-    const getDistance = (a: Offer, b: Offer): number => {
-      const locA = a.location || a.city?.location;
-      const locB = b.location || b.city?.location;
-      if (!locA || !locB) {
-        return Number.POSITIVE_INFINITY;
-      }
-      const dx = locA.latitude - locB.latitude;
-      const dy = locA.longitude - locB.longitude;
-      return dx * dx + dy * dy;
-    };
-
-    return offers
-      .filter((offer) => offer.id !== curOffer.id)
-      .sort((a, b) => getDistance(curOffer, a) - getDistance(curOffer, b))
-      .slice(0, 3);
-  }, [offers, curOffer]);
+    return (nearbyOffers ?? []).filter((offer) => offer.id !== current.id).slice(0, 3);
+  }, [nearbyOffers, curOffer]);
 
   if (isOfferLoading && !curOffer) {
     return <LoadingPage/>;
@@ -117,7 +89,7 @@ export default function OfferPage(): JSX.Element {
                 <img className="header__logo" src="img/logo.svg" alt="6 cities logo" width="81" height="41"/>
               </a>
             </div>
-            <HeaderNav offers={offers}/>
+            <HeaderNav/>
           </div>
         </div>
       </header>

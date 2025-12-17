@@ -1,4 +1,4 @@
-import { store } from './index';
+import { rootReducer } from '@store/root-reducer';
 
-export type StoreState = ReturnType<typeof store.getState>;
-export type StoreDispatch = typeof store.dispatch;
+export type StoreState = ReturnType<typeof rootReducer>;
+export type StoreDispatch = typeof import('./index').store.dispatch;

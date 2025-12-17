@@ -4,13 +4,11 @@ import { AppRoute, CardType } from '@consts';
 import PlaceCard from '@components/place-card/place-card';
 import HeaderNav from '@components/header-nav/header-nav';
 import { useStoreState } from '@store/hooks';
+import { getFavoriteCities, getFavoriteOffers } from '@store/offers-data/selectors';
 
 export default function FavoritesPage(): JSX.Element {
-  const offers = useStoreState((state) => state.offers);
-
-  const favorites = offers.filter((offer) => offer.isFavorite);
-
-  const cities = Array.from(new Set(favorites.map((offer) => offer.city.name))).sort();
+  const favorites = useStoreState(getFavoriteOffers);
+  const cities = useStoreState(getFavoriteCities);
   return (
     <div className="page">
       <Helmet>
@@ -24,7 +22,7 @@ export default function FavoritesPage(): JSX.Element {
                 <img className="header__logo" src="img/logo.svg" alt="6 cities logo" width="81" height="41"/>
               </a>
             </div>
-            <HeaderNav offers={offers}/>
+            <HeaderNav/>
           </div>
         </div>
       </header>

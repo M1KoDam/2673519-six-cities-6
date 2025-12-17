@@ -1,11 +1,11 @@
-import { AxiosInstance, AxiosError } from 'axios';
+import { AxiosError, AxiosInstance } from 'axios';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { StoreDispatch, StoreState } from './types';
-import { Offer, Review } from '@types';
-import { offersLoaded, offerUpdated, reviewsLoaded, authRequired, setDataLoadingStatus, setUser, nearbyOffersLoaded } from './actions';
+import { StoreDispatch, StoreState } from '@store/types';
+import { Offer, Review, User, APIRoute, AuthStatus } from '@types';
 import { saveStorageToken, dropStorageToken } from '@services/token';
-import { APIRoute, AuthStatus } from '@types';
-import { User } from '@types';
+import { loadOffers, setOffersDataLoadingStatus, updateOffer } from '@store/offers-data/offers-data';
+import { setAuthorizationStatus, setUser } from '@store/user-data/user-data';
+import { loadOfferInDetails, reviewsLoaded, addReview, setOfferInDetailsDataLoadingStatus } from '@store/current-offer-data/current-offer-data';
 
 type AuthData = {
   email: string;
@@ -30,9 +30,9 @@ export const fetchOffers = createAsyncThunk<
   'data/fetchOffers',
   async (_, { dispatch, extra: api, rejectWithValue }) => {
     try {
-      dispatch(setDataLoadingStatus(true));
+      dispatch(setOffersDataLoadingStatus(true));
       const { data } = await api.get<Offer[]>(APIRoute.Offers);
-      dispatch(offersLoaded(data));
+      dispatch(loadOffers(data));
       return data;
     } catch (error) {
       const errorMessage = error instanceof Error
@@ -40,7 +40,7 @@ export const fetchOffers = createAsyncThunk<
         : 'Failed to fetch offers';
       return rejectWithValue(errorMessage);
     } finally {
-      dispatch(setDataLoadingStatus(false));
+      dispatch(setOffersDataLoadingStatus(false));
     }
   }
 );
@@ -59,11 +59,12 @@ export const checkAuth = createAsyncThunk<
   async (_, { dispatch, extra: api, rejectWithValue }) => {
     try {
       const { data } = await api.get<User>(APIRoute.Login);
-      dispatch(authRequired(AuthStatus.Auth));
+      dispatch(setAuthorizationStatus(AuthStatus.Auth));
       dispatch(setUser(data));
       return data;
     } catch (error) {
-      dispatch(authRequired(AuthStatus.NoAuth));
+      dispatch(setAuthorizationStatus(AuthStatus.NoAuth));
+      dispatch(setUser(null));
       const errorMessage = error instanceof Error
         ? error.message
         : 'Authentication failed';
@@ -88,7 +89,7 @@ export const login = createAsyncThunk<
       const { data } = await api.post<User>(APIRoute.Login, { email, password });
 
       saveStorageToken(data.token);
-      dispatch(authRequired(AuthStatus.Auth));
+      dispatch(setAuthorizationStatus(AuthStatus.Auth));
       dispatch(setUser(data));
 
       return data;
@@ -128,11 +129,11 @@ export const logout = createAsyncThunk<
     try {
       await api.delete(APIRoute.Logout);
       dropStorageToken();
-      dispatch(authRequired(AuthStatus.NoAuth));
+      dispatch(setAuthorizationStatus(AuthStatus.NoAuth));
       dispatch(setUser(null));
     } catch (error) {
       dropStorageToken();
-      dispatch(authRequired(AuthStatus.NoAuth));
+      dispatch(setAuthorizationStatus(AuthStatus.NoAuth));
       dispatch(setUser(null));
 
       const errorMessage = error instanceof Error
@@ -143,7 +144,7 @@ export const logout = createAsyncThunk<
   }
 );
 
-export const fetchOffer = createAsyncThunk<
+export const fetchOfferDetails = createAsyncThunk<
   Offer,
   string,
   {
@@ -153,45 +154,35 @@ export const fetchOffer = createAsyncThunk<
     rejectValue: string;
   }
 >(
-  'data/fetchOffer',
+  'data/fetchOfferDetails',
   async (offerId, { dispatch, extra: api, rejectWithValue }) => {
     try {
-      const { data } = await api.get<Offer>(`${APIRoute.Offers}/${offerId}`);
-      dispatch(offerUpdated(data));
-      return data;
+      dispatch(setOfferInDetailsDataLoadingStatus(true));
+
+      const [offerResponse, nearbyResponse, reviewsResponse] = await Promise.all([
+        api.get<Offer>(`${APIRoute.Offers}/${offerId}`),
+        api.get<Offer[]>(`${APIRoute.Offers}/${offerId}/nearby`),
+        api.get<Review[]>(`${APIRoute.Comments}/${offerId}`),
+      ]);
+
+      dispatch(updateOffer(offerResponse.data));
+      dispatch(
+        loadOfferInDetails({
+          offerInfo: offerResponse.data,
+          nearestOffers: nearbyResponse.data,
+          reviews: reviewsResponse.data,
+        })
+      );
+
+      return offerResponse.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response?.status === 404) {
         return rejectWithValue('NOT_FOUND');
       }
-      const errorMessage = error instanceof Error
-        ? error.message
-        : 'Failed to fetch offer';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch offer details';
       return rejectWithValue(errorMessage);
-    }
-  }
-);
-
-export const fetchNearbyOffers = createAsyncThunk<
-  Offer[],
-  string,
-  {
-    dispatch: StoreDispatch;
-    state: StoreState;
-    extra: AxiosInstance;
-    rejectValue: string;
-  }
->(
-  'data/fetchNearbyOffers',
-  async (offerId, { dispatch, extra: api, rejectWithValue }) => {
-    try {
-      const { data } = await api.get<Offer[]>(`${APIRoute.Offers}/${offerId}/nearby`);
-      dispatch(nearbyOffersLoaded(data));
-      return data;
-    } catch (error) {
-      const errorMessage = error instanceof Error
-        ? error.message
-        : 'Failed to fetch nearby offers';
-      return rejectWithValue(errorMessage);
+    } finally {
+      dispatch(setOfferInDetailsDataLoadingStatus(false));
     }
   }
 );
@@ -213,16 +204,14 @@ export const fetchReviews = createAsyncThunk<
       dispatch(reviewsLoaded(data));
       return data;
     } catch (error) {
-      const errorMessage = error instanceof Error
-        ? error.message
-        : 'Failed to fetch reviews';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch reviews';
       return rejectWithValue(errorMessage);
     }
   }
 );
 
 export const sendReview = createAsyncThunk<
-  void,
+  Review,
   { offerId: string; comment: string; rating: number },
   {
     dispatch: StoreDispatch;
@@ -234,12 +223,11 @@ export const sendReview = createAsyncThunk<
   'data/sendReview',
   async ({ offerId, comment, rating }, { dispatch, extra: api, rejectWithValue }) => {
     try {
-      await api.post<Review>(`${APIRoute.Comments}/${offerId}`, { comment, rating });
-      dispatch(fetchReviews(offerId));
+      const { data } = await api.post<Review>(`${APIRoute.Comments}/${offerId}`, { comment, rating });
+      dispatch(addReview(data));
+      return data;
     } catch (error) {
-      const errorMessage = error instanceof Error
-        ? error.message
-        : 'Failed to send review';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send review';
       return rejectWithValue(errorMessage);
     }
   }

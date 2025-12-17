@@ -1,35 +1,19 @@
 import { Helmet } from 'react-helmet-async';
 import OffersList from '@components/offers-list/offers-list.tsx';
 import Map from '@components/map/map';
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { MapClassName } from '@consts';
 import CitiesList from '@components/cities-list/cities-list';
 import { useStoreState } from '@store/hooks';
-import { SortType } from '@types';
 import SortingOptions from '@components/offers-sorting/sorting-options';
 import HeaderNav from '@components/header-nav/header-nav';
+import { getCity } from '@store/app-data/selectors';
+import { getOffers, getSortedOffersByActiveCity } from '@store/offers-data/selectors';
 
 export default function MainPage(): JSX.Element {
-  const stateCity = useStoreState((state) => state.city);
-  const offers = useStoreState((state) => state.offers);
-  const sortType = useStoreState((state) => state.sortType);
-
-  const currentCityOffers = useMemo(() => {
-    const filtered = offers.filter((offer) => offer.city.name === stateCity.name);
-
-    return [...filtered].sort((a, b) => {
-      switch (sortType) {
-        case SortType.PriceLowToHigh:
-          return a.price - b.price;
-        case SortType.PriceHighToLow:
-          return b.price - a.price;
-        case SortType.TopRated:
-          return b.rating - a.rating;
-        default:
-          return 0;
-      }
-    });
-  }, [offers, stateCity.name, sortType]);
+  const stateCity = useStoreState(getCity);
+  const offers = useStoreState(getOffers);
+  const currentCityOffers = useStoreState(getSortedOffersByActiveCity);
 
   const [activeOfferId, setActiveOfferId] = useState<string | null>(null);
   const selectedOffer = useMemo(
@@ -50,7 +34,7 @@ export default function MainPage(): JSX.Element {
                 <img className="header__logo" src="img/logo.svg" alt="6 cities logo" width="81" height="41"/>
               </a>
             </div>
-            <HeaderNav offers={offers} />
+            <HeaderNav />
           </div>
         </div>
       </header>
@@ -72,7 +56,7 @@ export default function MainPage(): JSX.Element {
             </section>
             <div className="cities__right-section">
               <Map
-                city={offers[0].city}
+                city={stateCity}
                 offers={currentCityOffers}
                 selectedOffer={selectedOffer}
                 className={MapClassName.Main}
