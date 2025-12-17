@@ -1,7 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { rootReducer } from './root-reducer';
-export * from './types';
-export * from './hooks';
 import { createAPI, setDispatch } from '@services/api';
 
 export const api = createAPI();
@@ -15,5 +13,7 @@ export const store = configureStore({
       },
     }),
 });
+
+export type AppDispatch = typeof store.dispatch;
 
 setDispatch(store.dispatch);

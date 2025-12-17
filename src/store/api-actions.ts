@@ -5,7 +5,7 @@ import { Offer, Review, User, APIRoute, AuthStatus } from '@types';
 import { saveStorageToken, dropStorageToken } from '@services/token';
 import { loadOffers, setOffersDataLoadingStatus, updateOffer } from '@store/offers-data/offers-data';
 import { setAuthorizationStatus, setUser } from '@store/user-data/user-data';
-import { loadOfferInDetails, reviewsLoaded, addReview, setOfferInDetailsDataLoadingStatus } from '@store/current-offer-data/current-offer-data';
+import { loadOfferInDetails, reviewsLoaded, addReview, setOfferInDetailsDataLoadingStatus, updateOfferInDetails } from '@store/current-offer-data/current-offer-data';
 
 type AuthData = {
   email: string;
@@ -228,6 +228,53 @@ export const sendReview = createAsyncThunk<
       return data;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to send review';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const fetchFavorites = createAsyncThunk<
+  Offer[],
+  void,
+  {
+    dispatch: StoreDispatch;
+    state: StoreState;
+    extra: AxiosInstance;
+    rejectValue: string;
+  }
+>(
+  'data/fetchFavorites',
+  async (_, { dispatch, extra: api, rejectWithValue }) => {
+    try {
+      const { data } = await api.get<Offer[]>(APIRoute.Favorite);
+      data.forEach((offer) => dispatch(updateOffer(offer)));
+      return data;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch favorites';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const toggleFavorite = createAsyncThunk<
+  Offer,
+  { offerId: string; status: 0 | 1 },
+  {
+    dispatch: StoreDispatch;
+    state: StoreState;
+    extra: AxiosInstance;
+    rejectValue: string;
+  }
+>(
+  'data/toggleFavorite',
+  async ({ offerId, status }, { dispatch, extra: api, rejectWithValue }) => {
+    try {
+      const { data } = await api.post<Offer>(`${APIRoute.Favorite}/${offerId}/${status}`);
+      dispatch(updateOffer(data));
+      dispatch(updateOfferInDetails(data));
+      return data;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to toggle favorite';
       return rejectWithValue(errorMessage);
     }
   }
