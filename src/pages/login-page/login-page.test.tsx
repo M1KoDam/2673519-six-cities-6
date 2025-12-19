@@ -6,6 +6,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import LoginPage from './login-page';
 import type { StoreState } from '@store/types';
 import { SortType } from '@types';
+import { Cities } from '@consts';
 
 const city = {
   name: 'Paris',
@@ -29,6 +30,10 @@ vi.mock('@store/api-actions', () => ({
   fetchOffers: () => ({ type: 'fetchOffers' }),
 }));
 
+vi.mock('@store/app-data/app-data', () => ({
+  cityChanged: (nextCity: unknown) => ({ type: 'cityChanged', payload: nextCity }),
+}));
+
 const storeHooksMock = vi.hoisted(() => {
   const dispatch = vi.fn(() => Promise.resolve({ type: 'login/rejected', payload: 'Login failed' } as const));
   let state: StoreState;
@@ -47,6 +52,38 @@ vi.mock('@store/hooks', () => ({
 }));
 
 describe('Page: LoginPage', () => {
+  it('Navigates to main page and sets city when promo city clicked', async () => {
+    const user = userEvent.setup({ delay: 0 });
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.6);
+
+    storeHooksMock.dispatch.mockClear();
+    routerMock.navigate.mockClear();
+
+    storeHooksMock.setState({
+      USER: { authorizationStatus: 1, user: null },
+      APP: { city: city as unknown as StoreState['APP']['city'], sortType: SortType.Popular, error: null },
+      OFFERS: { offers: [], isOffersDataLoading: false, favoritesCount: 0 },
+      CURRENT_OFFER: { offerInfo: null, nearbyOffers: [], reviews: [], isOfferInDetailsDataLoading: false },
+    });
+
+    render(
+      <HelmetProvider>
+        <MemoryRouter>
+          <LoginPage />
+        </MemoryRouter>
+      </HelmetProvider>
+    );
+
+    const expectedCity = Cities[3].city;
+    const promoButton = screen.getByRole('button', { name: expectedCity.name });
+    await user.click(promoButton);
+
+    expect(storeHooksMock.dispatch).toHaveBeenCalledWith({ type: 'cityChanged', payload: expectedCity });
+    expect(routerMock.navigate).toHaveBeenCalledWith('/');
+
+    randomSpy.mockRestore();
+  });
+
   it('Shows validation error when password contains spaces', async () => {
     const user = userEvent.setup({ delay: 0 });
 
@@ -75,9 +112,80 @@ describe('Page: LoginPage', () => {
     const passwordInput = screen.getByPlaceholderText('Password');
     passwordInput.focus();
     await user.paste('bad password');
-    await user.click(screen.getByRole('button', { name: 'Sign in' }));
 
     expect(await screen.findByText('Password cannot contain spaces')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+    expect(storeHooksMock.dispatch).not.toHaveBeenCalled();
+  });
+
+  it('Shows validation error when password has no digit', async () => {
+    const user = userEvent.setup({ delay: 0 });
+
+    storeHooksMock.dispatch.mockClear();
+    routerMock.navigate.mockClear();
+
+    storeHooksMock.setState({
+      USER: { authorizationStatus: 1, user: null },
+      APP: { city: city as unknown as StoreState['APP']['city'], sortType: SortType.Popular, error: null },
+      OFFERS: { offers: [], isOffersDataLoading: false, favoritesCount: 0 },
+      CURRENT_OFFER: { offerInfo: null, nearbyOffers: [], reviews: [], isOfferInDetailsDataLoading: false },
+    });
+
+    render(
+      <HelmetProvider>
+        <MemoryRouter>
+          <LoginPage />
+        </MemoryRouter>
+      </HelmetProvider>
+    );
+
+    const emailInput = screen.getByPlaceholderText('Email');
+    emailInput.focus();
+    await user.paste('user@example.com');
+
+    const passwordInput = screen.getByPlaceholderText('Password');
+    passwordInput.focus();
+    await user.paste('password');
+
+    expect(await screen.findByText('Password must contain at least 1 letter and 1 digit')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+    expect(storeHooksMock.dispatch).not.toHaveBeenCalled();
+  });
+
+  it('Shows validation error when password is too short', async () => {
+    const user = userEvent.setup({ delay: 0 });
+
+    storeHooksMock.dispatch.mockClear();
+    routerMock.navigate.mockClear();
+
+    storeHooksMock.setState({
+      USER: { authorizationStatus: 1, user: null },
+      APP: { city: city as unknown as StoreState['APP']['city'], sortType: SortType.Popular, error: null },
+      OFFERS: { offers: [], isOffersDataLoading: false, favoritesCount: 0 },
+      CURRENT_OFFER: { offerInfo: null, nearbyOffers: [], reviews: [], isOfferInDetailsDataLoading: false },
+    });
+
+    render(
+      <HelmetProvider>
+        <MemoryRouter>
+          <LoginPage />
+        </MemoryRouter>
+      </HelmetProvider>
+    );
+
+    const emailInput = screen.getByPlaceholderText('Email');
+    emailInput.focus();
+    await user.paste('user@example.com');
+
+    const passwordInput = screen.getByPlaceholderText('Password');
+    passwordInput.focus();
+    await user.paste('a1b');
+
+    expect(await screen.findByText('Password must be at least 4 characters')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
     expect(storeHooksMock.dispatch).not.toHaveBeenCalled();
   });
 });

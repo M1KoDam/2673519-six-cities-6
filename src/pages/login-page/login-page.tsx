@@ -3,9 +3,10 @@ import { useStoreDispatch, useStoreState } from '@store/hooks';
 import { useState, useEffect } from 'react';
 import { fetchOffers, login } from '@store/api-actions';
 import { useNavigate } from 'react-router-dom';
-import { AppRoute } from '@consts';
-import { AuthStatus } from '@types';
+import { AppRoute, Cities } from '@consts';
+import { AuthStatus, City } from '@types';
 import { getAuthorizationStatus } from '@store/user-data/selectors';
+import { cityChanged } from '@store/app-data/app-data';
 
 export default function LoginPage() : JSX.Element {
   const dispatch = useStoreDispatch();
@@ -16,17 +17,46 @@ export default function LoginPage() : JSX.Element {
   const [passwordError, setPasswordError] = useState<string>('');
   const [loginError, setLoginError] = useState<string>('');
 
+  const [promoCity] = useState<City>(() => Cities[Math.floor(Math.random() * Cities.length)].city);
+
+  const getPasswordError = (nextPassword: string): string => {
+    if (nextPassword.length === 0) {
+      return '';
+    }
+
+    if (nextPassword.includes(' ')) {
+      return 'Password cannot contain spaces';
+    }
+
+    if (nextPassword.length < 4) {
+      return 'Password must be at least 4 characters';
+    }
+
+    const hasLetterAndDigit = /(?=.*\p{L})(?=.*\d)/u.test(nextPassword);
+    if (!hasLetterAndDigit) {
+      return 'Password must contain at least 1 letter and 1 digit';
+    }
+
+    return '';
+  };
+
   useEffect(() => {
     if (authStatus === AuthStatus.Auth) {
       navigate(AppRoute.Root);
     }
   }, [authStatus, navigate]);
 
+  const handlePromoCityClick = () => {
+    dispatch(cityChanged(promoCity));
+    navigate(AppRoute.Root);
+  };
+
   const handleSubmit = (evt: React.FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
 
-    if (password.includes(' ')) {
-      setPasswordError('Password cannot contain spaces');
+    const nextPasswordError = getPasswordError(password);
+    if (nextPasswordError) {
+      setPasswordError(nextPasswordError);
       setLoginError('');
       return;
     }
@@ -80,18 +110,29 @@ export default function LoginPage() : JSX.Element {
               <div className="login__input-wrapper form__input-wrapper">
                 <label className="visually-hidden">Password</label>
                 <input className="login__input form__input" type="password" name="password" placeholder="Password"
-                  value={password} onChange={(e) => setPassword(e.target.value)} required
+                  value={password}
+                  onChange={(e) => {
+                    const nextPassword = e.target.value;
+                    setPassword(nextPassword);
+                    setPasswordError(getPasswordError(nextPassword));
+                    setLoginError('');
+                  }}
+                  required
                 />
-                {passwordError && <div style={{ color: 'red', marginTop: '5px' }}>{passwordError}</div>}
+                {passwordError && <div role="alert" style={{ color: 'red', marginTop: '5px' }}>{passwordError}</div>}
               </div>
               <button className="login__submit form__submit button" type="submit">Sign in</button>
             </form>
           </section>
           <section className="locations locations--login locations--current">
             <div className="locations__item">
-              <a className="locations__item-link" href="#">
-                <span>Amsterdam</span>
-              </a>
+              <button
+                className="locations__item-link"
+                type="button"
+                onClick={handlePromoCityClick}
+              >
+                <span>{promoCity.name}</span>
+              </button>
             </div>
           </section>
         </div>
