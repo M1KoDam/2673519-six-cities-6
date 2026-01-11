@@ -12,7 +12,7 @@ import { addTokenToImageUrl } from '@utils/image-url';
 import { fetchOfferDetails, toggleFavorite } from '@store/api-actions';
 import { useEffect, useState, useMemo } from 'react';
 import LoadingPage from '@pages/loading-page/loading-page';
-import { AuthStatus, Offer } from '@types';
+import { AuthStatus } from '@types';
 import { getOfferInDetails, getNearbyOffers, getOfferInDetailsDataLoadingStatus, getReviews } from '@store/current-offer-data/selectors';
 import { getAuthorizationStatus } from '@store/user-data/selectors';
 
@@ -27,7 +27,6 @@ export default function OfferPage(): JSX.Element {
   const reviews = useStoreState(getReviews);
   const nearbyOffers = useStoreState(getNearbyOffers);
   const isOfferLoading = useStoreState(getOfferInDetailsDataLoadingStatus);
-  const [hoveredOffer, setHoveredOffer] = useState<Offer | null>(null);
   const [isOfferNotFound, setIsOfferNotFound] = useState<boolean>(false);
 
   useEffect(() => {
@@ -206,7 +205,7 @@ export default function OfferPage(): JSX.Element {
             <Map
               city={curOffer.city}
               offers={[curOffer, ...nearbyToShow]}
-              selectedOffer={hoveredOffer || curOffer}
+              selectedOffer={curOffer}
               className={MapClassName.Offer}
             />
           )}
@@ -214,8 +213,6 @@ export default function OfferPage(): JSX.Element {
         <div className="container">
           <NearbyOffersList
             offers={nearbyToShow}
-            onOfferHover={setHoveredOffer}
-            onOfferLeave={() => setHoveredOffer(null)}
             onOfferClick={handleNearbyOfferClick}
           />
         </div>

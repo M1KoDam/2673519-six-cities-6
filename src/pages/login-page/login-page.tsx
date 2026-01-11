@@ -69,7 +69,7 @@ export default function LoginPage() : JSX.Element {
         dispatch(fetchOffers());
         navigate(AppRoute.Root);
       } else if (login.rejected.match(result)) {
-        setLoginError(result.payload || 'Login failed');
+        setLoginError(result.payload || 'Не удалось войти. Попробуйте ещё раз.');
       }
     });
   };

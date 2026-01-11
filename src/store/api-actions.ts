@@ -94,18 +94,24 @@ export const login = createAsyncThunk<
 
       return data;
     } catch (error) {
-      let errorMessage = 'Login failed';
+      let errorMessage = error instanceof Error ? error.message : 'Login failed';
 
       if (isAxiosError(error)) {
         const axiosError = error as AxiosError<ErrorResponse>;
         const responseData = axiosError.response?.data;
+        const status = axiosError.response?.status;
 
-        if (responseData?.message) {
-          errorMessage = responseData.message;
-        } else if (responseData?.error) {
-          errorMessage = responseData.error;
-        } else if (axiosError.response?.status === 400) {
-          errorMessage = 'Invalid email or password';
+        if (status === 400 || status === 401) {
+          return rejectWithValue('Введён неверный email или пароль');
+        }
+
+        const responseMessage = responseData?.message ?? responseData?.error;
+        if (responseMessage) {
+          if (/validation error/i.test(responseMessage) || /six-cities\/login/i.test(responseMessage)) {
+            errorMessage = 'Введён неверный email или пароль';
+          } else {
+            errorMessage = responseMessage;
+          }
         }
       }
 
