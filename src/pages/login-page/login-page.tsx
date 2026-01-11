@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { useStoreDispatch, useStoreState } from '@store/hooks';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { fetchOffers, login } from '@store/api-actions';
 import { useNavigate } from 'react-router-dom';
 import { AppRoute, Cities } from '@consts';
@@ -16,6 +16,7 @@ export default function LoginPage() : JSX.Element {
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState<string>('');
   const [loginError, setLoginError] = useState<string>('');
+  const passwordInputRef = useRef<HTMLInputElement | null>(null);
 
   const [promoCity] = useState<City>(() => Cities[Math.floor(Math.random() * Cities.length)].city);
 
@@ -34,7 +35,7 @@ export default function LoginPage() : JSX.Element {
 
     const hasLetterAndDigit = /(?=.*\p{L})(?=.*\d)/u.test(nextPassword);
     if (!hasLetterAndDigit) {
-      return 'Password must contain at least 1 letter and 1 digit';
+      return 'Password must contain at least one letter and one digit';
     }
 
     return '';
@@ -58,18 +59,21 @@ export default function LoginPage() : JSX.Element {
     if (nextPasswordError) {
       setPasswordError(nextPasswordError);
       setLoginError('');
+      passwordInputRef.current?.setCustomValidity(nextPasswordError);
+      passwordInputRef.current?.reportValidity();
       return;
     }
 
     setPasswordError('');
     setLoginError('');
+    passwordInputRef.current?.setCustomValidity('');
 
     dispatch(login({ email, password })).then((result) => {
       if (login.fulfilled.match(result)) {
         dispatch(fetchOffers());
         navigate(AppRoute.Root);
       } else if (login.rejected.match(result)) {
-        setLoginError(result.payload || 'Не удалось войти. Попробуйте ещё раз.');
+        setLoginError(result.payload || 'Failed to login. Please try again.');
       }
     });
   };
@@ -110,16 +114,20 @@ export default function LoginPage() : JSX.Element {
               <div className="login__input-wrapper form__input-wrapper">
                 <label className="visually-hidden">Password</label>
                 <input className="login__input form__input" type="password" name="password" placeholder="Password"
+                  ref={passwordInputRef}
                   value={password}
+                  title={passwordError}
+                  aria-invalid={Boolean(passwordError)}
                   onChange={(e) => {
                     const nextPassword = e.target.value;
                     setPassword(nextPassword);
-                    setPasswordError(getPasswordError(nextPassword));
+                    const nextError = getPasswordError(nextPassword);
+                    setPasswordError(nextError);
+                    passwordInputRef.current?.setCustomValidity(nextError);
                     setLoginError('');
                   }}
                   required
                 />
-                {passwordError && <div role="alert" style={{ color: 'red', marginTop: '5px' }}>{passwordError}</div>}
               </div>
               <button className="login__submit form__submit button" type="submit">Sign in</button>
             </form>

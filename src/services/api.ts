@@ -12,7 +12,7 @@ type DetailMessageType = {
 }
 
 export class ServerUnavailableError extends Error {
-  constructor(message = 'Сервер временно недоступен. Пожалуйста, попробуйте позже.') {
+  constructor(message = 'The server is temporarily unavailable. Please try again later.') {
     super(message);
     this.name = 'ServerUnavailableError';
   }

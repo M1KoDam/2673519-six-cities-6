@@ -25,7 +25,7 @@ export default function LoadingPage(): JSX.Element {
         fontWeight: '500'
       }}
       >
-        Загрузка...
+        Loading...
       </p>
       <style>{`
         @keyframes spin {

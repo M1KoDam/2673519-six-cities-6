@@ -113,7 +113,7 @@ describe('Page: LoginPage', () => {
     passwordInput.focus();
     await user.paste('bad password');
 
-    expect(await screen.findByText('Password cannot contain spaces')).toBeInTheDocument();
+    expect(await screen.findByTitle('Password cannot contain spaces')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
     expect(storeHooksMock.dispatch).not.toHaveBeenCalled();
@@ -148,7 +148,7 @@ describe('Page: LoginPage', () => {
     passwordInput.focus();
     await user.paste('password');
 
-    expect(await screen.findByText('Password must contain at least 1 letter and 1 digit')).toBeInTheDocument();
+    expect(await screen.findByTitle('Password must contain at least one letter and one digit')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
     expect(storeHooksMock.dispatch).not.toHaveBeenCalled();
@@ -183,7 +183,7 @@ describe('Page: LoginPage', () => {
     passwordInput.focus();
     await user.paste('a1b');
 
-    expect(await screen.findByText('Password must be at least 4 characters')).toBeInTheDocument();
+    expect(await screen.findByTitle('Password must be at least 4 characters')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
     expect(storeHooksMock.dispatch).not.toHaveBeenCalled();

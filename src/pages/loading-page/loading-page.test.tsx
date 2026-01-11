@@ -5,6 +5,6 @@ import LoadingPage from './loading-page';
 describe('Page: LoadingPage', () => {
   it('Renders loading text', () => {
     render(<LoadingPage />);
-    expect(screen.getByText('Загрузка...')).toBeInTheDocument();
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 });

@@ -102,13 +102,13 @@ export const login = createAsyncThunk<
         const status = axiosError.response?.status;
 
         if (status === 400 || status === 401) {
-          return rejectWithValue('Введён неверный email или пароль');
+          return rejectWithValue('Invalid email or password');
         }
 
         const responseMessage = responseData?.message ?? responseData?.error;
         if (responseMessage) {
           if (/validation error/i.test(responseMessage) || /six-cities\/login/i.test(responseMessage)) {
-            errorMessage = 'Введён неверный email или пароль';
+            errorMessage = 'Invalid email or password';
           } else {
             errorMessage = responseMessage;
           }
